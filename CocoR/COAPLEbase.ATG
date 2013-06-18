@@ -1,0 +1,235 @@
+COMPILER Coaple
+CHARACTERS
+	letter = 'a' .. 'z' + 'A' .. 'Z'.
+	digit = "0123456789".
+	tab = '\t'.
+	cr = '\r'.
+	lf = '\n'.
+TOKENS
+	ident = letter {letter}.
+	number = digit {digit}.
+	//some identifier:
+	//Semantic [ID] -> variable, action name (ex: var -number- : Integer)
+	//Semantic [Var] -> variable, agent instance (Same as ID)
+	//Semantic [CasteID] -> Name of the caste (ex: caste -MyCaste-)
+	//Semantic [CasteName] -> Same as CasteID
+	//Semantic [AgentID] -> agent instance (same as ID and Var)
+	//Semantic [ParameterID] -> name of parameter
+	//Semantic [TypeID] -> (Same as TypeName ?)
+	//Semantic [TypeName] -> given name to a type (ex: Type Record -Date-)
+	//Semantic [FieldName] -> name of properties created in types (ex(see above): -day-, -month-: Integer)
+	//Semantic [ActualPara] -> name of parameter
+	//Semantic [ConstExp] -> const value
+		
+COMMENTS FROM "//" TO cr lf
+COMMENTS FROM "/*" TO "*/" NESTED
+IGNORE
+	cr + lf + tab
+PRODUCTIONS
+	
+	Coaple = Prog.
+	
+	Prog = 
+		{TypeDec} {CasteDef}.
+		
+	CasteDef =
+		"Caste" CasteName [Inheritances] ";"
+			[EnvironmentDecs]
+			[StateDecs]
+			[ActionDecs]
+			"Begin" 
+				[LocalDecs]
+				Statement
+		"End" CasteName.
+		
+	Inheritances =
+		"Inherits" CasteName {"," CasteName}.
+		
+	EnvironmentDecs = 
+		"Observes" {EnvDec ";"}.
+		
+	EnvDec = 
+		( 
+			AgentId
+			| "Var" ID "in" CasteID [":=" AgentID]
+			| "All" "in" CasteID
+			| "Set" ID "in" CasteID [":=" AgentSetEnum]
+		)
+-->		[Actions].     -->> WHAAAAT
+		
+	AgentSetEnum =
+		"{"
+			AgentID {"," AgentID}
+		"}".
+		
+	StateDecs =
+		Dec ";" {Dec ";"}.
+		
+	LocalDecs = 
+		Dec ";" {Dec ";"}.
+	
+	Dec = 
+		"var" IDList ":" Type [":=" ConstExp].
+		
+		
+	ActionDecs =
+		ActionDec ";" {ActionDec ";"}.
+	
+	ActionDec =
+		"Action" IDList "("[ParameterList]")"
+		[Statement]
+		[Impact].
+		
+	ParameterList =
+		Parameter {"," Parameter}.
+	
+	Parameter =
+		ParameterID {"," ParameterID} ":" TypeID.
+		
+	Impact =
+		"Affect" CasteID {"," CasteID}.
+		
+	Type =
+->		TypeID	-> already in TypeExp
+		| TypeExp
+		| TypeName ["@"URL].
+		
+	PrimitiveType = 
+		"Integer"
+		| "Real"
+		| "Bool"
+		| "Char" 
+		| "String".
+		
+	TypeDec =
+		"Type" StructureType {"," TypeExp}.
+		
+	StructureType =
+		RecordType
+		| ListType 
+		| EnumeratedType.
+		
+	RecordType =
+		"Record" TypeName "of" FieldName {"," FieldName} ":" TypeExp ";"
+		"End".
+		
+	TypeExp =
+		PrimitiveType
+		| StructureType
+		| TypeID.
+		
+	ListType =
+		"List" TypeName "of" TypeExp "End".
+		
+	EnumeratedType =
+		"Enumerated" TypeName "=" IDList "End".
+		
+	IDList =
+		ID {"," ID}.
+		
+	Statement =
+		Assigment
+->		| ActionEvent	-> not defined
+		| CasteEvent
+		| AgentEvent
+		| "Begin" Statement {";" Statement} "End"
+		| LoopStatement
+		| IfStatement
+		| CaseStatement
+		| WithStatement
+		| ForAllStatement
+		| WhenStatement.
+	
+	Assigment =
+		Var ":=" Exp.
+		
+	CasteEvent =
+->		"join" CasteID "("[ActualPara]")"	-> ActualPara not defined
+		| "quit CasteID
+		| "suspend" CasteID
+		| "resume" CasteID.
+		
+	AgentEvent =
+->		"create" Var "of" CasteID "("[ActualPara]")" ["@"URL]	-> ActualPara not defined
+		| "destroy" Var.
+
+	LoopStatement =
+		ForLoop
+		| WhileLoop
+		| RepeatLoop
+		| Loop.
+	
+	Loop =
+		"Loop" Statement "End".
+		
+	WhileLoop =
+		"While" Exp "do" Statement "End".
+		
+	RepeatLoop =
+		"Repeat" Statement "until" Exp "End".
+		
+	ForLoop =
+		"For" Var ":=" Exp "to" Exp ["by" Exp] "do"
+		Statement
+		"End".
+		
+	ForAllStatement =
+		"Forall" Var "in" Exp "do" 
+		Statement 
+		"End".
+		
+	IfStatement =
+		"if" Exp "then" Statement
+		{"elseif" Exp "then" Statement}
+		["else" Statement]
+		"End".
+		
+	CaseStatement =
+		"Case" Exp "of"
+		{Exp "->" Statement}
+		["else" Statement].
+		
+	WithStatement =
+		"With" Exp "do" Statement "End".
+		
+	WhenStatement =
+		"When" {Scenario "->" Statement } "End".
+		
+	Scenario =
+		AgentID ":" ActionPattern
+		| AgentVar ":" ActionPattern
+		| "Exist" Var "in" CasteID ":" ActionPattern
+		| "All" Var "in" CasteID ":" ActionPattern
+		| "Some" Var "in" CasteID ":" ActionPattern
+		| Scenario "and" Scenario
+		| Scenario "or" Scenario
+		| Scenario "xor" Scenario.
+		
+	ActionPattern =
+		ActionID "("[PatternPara {"," PatternPara}]")".
+		
+	PatternPara =
+		Var | Exp.
+		
+	Exp = 
+-> 		//TODO	
+
+	ActualPara =
+-> 		//TODO
+
+	ActionEvent =
+->		//TODO
+
+END Coaple.
+
+
+
+
+
+
+
+
+
+
+
+

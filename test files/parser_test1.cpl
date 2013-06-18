@@ -1,0 +1,38 @@
+caste Xxx;
+observes
+	all y in Yyy;
+state
+	var a: string;
+	var bb: integer;
+	var c: char;
+action
+	vroum()
+	begin
+		if j = 22 
+		then 
+			bb := 22;
+		end
+	end
+	affect vram;
+init
+	begin
+		a := "yooo";
+		c := 'c';
+	end
+body
+	begin
+		when exist i in Blabla : incremented -> i := i * 2;
+	end
+end Xxx
+
+
+caste Yyy;
+state
+	var id: String;
+	var	name: String;
+		
+init
+	//empty init
+body
+	//empty body
+end Yyy

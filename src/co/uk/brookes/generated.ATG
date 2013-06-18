@@ -1,0 +1,229 @@
+COMPILER Coaple
+CHARACTERS
+	letter = 'a' .. 'z' + 'A' .. 'Z'.
+	digit = "0123456789".
+	tab = '\t'.
+	cr = '\r'.
+	lf = '\n'.
+	slash = '/'.
+	urlChar = '@'.
+TOKENS
+	ident = letter {letter}.
+	number = digit {digit}.
+	url = urlChar {letter|slash}.
+COMMENTS FROM "//" TO cr lf
+COMMENTS FROM "/*" TO "*/" NESTED
+IGNORE
+	cr + lf + tab
+PRODUCTIONS
+	
+	Coaple = Prog.
+	
+	Prog = 
+		{TypeDec} {CasteDec}.
+		
+	TypeDec =
+		"type" StructureType {"," TypeExp}.
+		
+	TypeExp =
+		PrimitiveType
+		| StructureType
+		| ID.
+		
+	PrimitiveType = 
+		"integer"
+		| "real"
+		| "bool"
+		| "char" 
+		| "string".
+		
+	StructureType =
+		RecordType
+		| ListType 
+		| EnumeratedType.
+		
+	RecordType =
+		"record" ident "of" ident {"," ident} ":" TypeExp ";"
+		"end".
+		
+	ListType =
+		"list" ident "of" TypeExp "end".
+		
+	EnumeratedType =
+		"enumerate" ident "=" IDList "end".
+		
+	IDList =
+		ident {"," ident}.
+		
+	CasteDec =
+		"caste" ident [Inheritances] ";"
+			[EnvironmentDecs]
+			[StateDecs]
+			[ActionDecs]
+			"init" Statement
+			"body" 
+				[Decs]
+				[ActionDecs]
+				Statement
+			"end" ident.
+		
+	Inheritances =
+		"inherits" ident {"," ident}.
+		
+	EnvironmentDecs = 
+		"observes" {EnvDec ";"}.
+		
+	EnvDec = 
+		ident
+		| "all" ident "in" ID
+		| "var" IDList "in" ID [":=" AgentID]
+		| "set" IDList "in" ID [":=" AgentSetEnum].
+	
+	AgentID	=
+		ident "in" ID.
+		
+	ID =
+		ident [url].
+		
+	AgentSetEnum =
+		"{"
+			ident {"," ident}
+		"}".
+		
+	StateDecs =
+		"state" Decs.
+		
+	Decs = 
+		Dec ";" {Dec ";"}.
+	
+	Dec = 
+		"var" IDList ":" TypeExp [":=" ident].
+		
+	ActionDecs =
+		ActionDec ";" {ActionDec ";"}.
+	
+	ActionDec =
+		"action" IDList "("[ParameterList]")"
+		[Statement]
+		[Impact].
+		
+	ParameterList =
+		Parameter {"," Parameter}.
+	
+	Parameter =
+		ident {"," ident} ":" ID.
+		
+	Impact =
+		"affect" ID { "," ID }.
+		
+	Statement =
+		Designator (":=" Exp | "(" [ParameterList] ")")
+		| CasteEvent
+		| AgentEvent
+		| "begin" Statement {";" Statement} "end"
+		| LoopStatement
+		| IfStatement
+		| CaseStatement
+		| WithStatement
+		| ForAllStatement
+		| WhenStatement.
+		
+	CasteEvent =
+		"join" ID "("[ident]")"
+		| "quit" ID
+		| "suspend" ID
+		| "resume" ID.
+		
+	AgentEvent =
+		"create" ident "of" ID "("[ident]")" [url]
+		| "destroy" ident.
+
+	LoopStatement =
+		ForLoop
+		| WhileLoop
+		| RepeatLoop
+		| Loop.
+	
+	Loop =
+		"loop" Statement "end".
+		
+	WhileLoop =
+		"while" Exp "do" Statement "end".
+		
+	RepeatLoop =
+		"repeat" Statement "until" Exp "end".
+		
+	ForLoop =
+		"for" ident ":=" Exp "to" Exp ["by" Exp] "do"
+		Statement
+		"end".
+		
+	ForAllStatement =
+		"forall" ident "in" Exp "do" 
+		Statement 
+		"end".
+		
+	IfStatement =
+		"if" Exp "then" Statement
+		{"elseif" Exp "then" Statement}
+		["else" Statement]
+		"end".
+		
+	CaseStatement =
+		"case" Exp "of"
+		{Exp "->" Statement}
+		["else" Statement]
+		"end".
+		
+	WithStatement =
+		"with" Exp "do" Statement "end".
+		
+	WhenStatement =
+		"when" {Scenario "->" Statement} "end".
+		
+	Scenario =
+		(ident ["in" ID] ":" ActionPattern
+		| "exist" ident "in" ID ":" ActionPattern
+		| "all" ident "in" ID ":" ActionPattern)
+		[("and"|"or"|"xor") Scenario].
+		
+	ActionPattern =
+		ident "("[PatternPara {"," PatternPara}]")".
+		
+	PatternPara =
+		Exp.
+		
+	Exp = 
+		Term {Addop Term}.
+	
+	Addop =
+		"+" | "-".
+		
+	Mulop =
+		"*" | "/" | "%".
+		
+	Term =
+		Factor {Mulop Factor}.
+	
+	Factor = 
+		number
+		| Designator
+		| "(" Exp ")".
+		
+	Designator =
+		ident { "." ident }.
+		
+
+END Coaple.
+
+
+
+
+
+
+
+
+
+
+
+
