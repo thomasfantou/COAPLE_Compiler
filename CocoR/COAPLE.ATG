@@ -9,12 +9,14 @@ CHARACTERS
 	urlChar = '@'.
 	apostr = '\''.
 	quote = '\"'.
+	underscore = '_'.
+	stringChar = ANY - '"'.
 TOKENS
-	ident = letter {letter}.
+	ident = (letter|underscore) {letter|digit|underscore}.
 	number = digit {digit}.
 	url = urlChar {letter|slash}.
 	charVal = apostr letter apostr.
-	stringVal = quote letter {letter} quote.
+	stringVal = quote stringChar {stringChar} quote.
 COMMENTS FROM "//" TO cr lf
 COMMENTS FROM "/*" TO "*/" NESTED
 IGNORE
@@ -155,10 +157,10 @@ PRODUCTIONS
 		"loop" Statement "end".
 		
 	WhileLoop =
-		"while" Condition "do" Statement "end".
+		"while" Conditions "do" Statement "end".
 		
 	RepeatLoop =
-		"repeat" Statement "until" Condition "end".
+		"repeat" Statement "until" Conditions "end".
 		
 	ForLoop =
 		"for" ident ":=" Exp "to" Exp ["by" Exp] "do"
@@ -171,8 +173,8 @@ PRODUCTIONS
 		"end".
 		
 	IfStatement =
-		"if" Condition "then" Statement
-		{"elseif" Condition "then" Statement}
+		"if" Conditions "then" Statement
+		{"elseif" Conditions "then" Statement}
 		["else" Statement]
 		"end".
 		
@@ -203,31 +205,36 @@ PRODUCTIONS
 	Exp = 
 		Term {Addop Term}.
 		
+	Conditions =
+		Condition {Boolop Condition}.
+		
 	Condition =
-		Exp Relop Exp.
+		Exp [Relop Exp].
 	
 	Addop =
-		"+" | "-".
+		"+" | "-" | "++".
 		
 	Mulop =
 		"*" | "/" | "%".
 		
 	Relop =
 		"=" | "!=" | ">" | ">=" | "<" | "<=".
-
+		
+	Boolop =
+		"and" | "or".
 		
 	Term =
 		Factor {Mulop Factor}.
 	
 	Factor = 
 		number
-		| Designator
+		| ["not"] Designator
 		| "(" Exp ")"
 		| charVal
 		| stringVal.
 		
 	Designator =
-		ident { "." ident }.
+		ident { "." ident } ["[" Exp "]"].
 		
 
 END Coaple.

@@ -21,8 +21,9 @@ init
 	end
 body
 	begin
-		when exist i in Blabla : incremented -> i := i * 2;
+		when exist i in Blabla : move() -> i := i * 2;
 	end
+end
 end Xxx
 
 
@@ -34,5 +35,23 @@ state
 init
 	//empty init
 body
-	//empty body
+	//expressions test
+	begin
+		i := 44;
+		i := 19 + 43;
+		i := 55 * (2-2);
+		i := 2 / (33 * (1+1));
+		i := i + 2;
+		i := agent.var1 * (i + 1);
+		str := "hello " ++ "world !";
+		i := tab[1];
+		i := tab[2*(3/7)];
+	//conditions test	
+		if i = 3 then m(); end
+		if i <= 10 then m(); end
+		if i = 0 or i = 1 then m(); end
+		if not b then m(); end
+		if b or b2 or b3 or b4 then m(); end
+		if b and not b2 then m(); end
+	end
 end Yyy

@@ -8,7 +8,7 @@ public class Parser {
 	public static final int _url = 3;
 	public static final int _charVal = 4;
 	public static final int _stringVal = 5;
-	public static final int maxT = 77;
+	public static final int maxT = 81;
 
 	static final boolean T = true;
 	static final boolean x = false;
@@ -140,7 +140,7 @@ public class Parser {
 			ListType();
 		} else if (la.kind == 19) {
 			EnumeratedType();
-		} else SynErr(78);
+		} else SynErr(82);
 	}
 
 	void TypeExp() {
@@ -150,7 +150,7 @@ public class Parser {
 			StructureType();
 		} else if (la.kind == 1) {
 			ID();
-		} else SynErr(79);
+		} else SynErr(83);
 	}
 
 	void PrimitiveType() {
@@ -164,7 +164,7 @@ public class Parser {
 			Get();
 		} else if (la.kind == 12) {
 			Get();
-		} else SynErr(80);
+		} else SynErr(84);
 	}
 
 	void ID() {
@@ -257,7 +257,7 @@ public class Parser {
 					ParameterList();
 				}
 				Expect(36);
-			} else SynErr(81);
+			} else SynErr(85);
 			Expect(16);
 			break;
 		}
@@ -299,7 +299,7 @@ public class Parser {
 			WhenStatement();
 			break;
 		}
-		default: SynErr(82); break;
+		default: SynErr(86); break;
 		}
 	}
 
@@ -338,7 +338,7 @@ public class Parser {
 				Get();
 				AgentSetEnum();
 			}
-		} else SynErr(83);
+		} else SynErr(87);
 	}
 
 	void AgentID() {
@@ -413,15 +413,20 @@ public class Parser {
 
 	void Designator() {
 		Expect(1);
-		while (la.kind == 76) {
+		while (la.kind == 78) {
 			Get();
 			Expect(1);
+		}
+		if (la.kind == 79) {
+			Get();
+			Exp();
+			Expect(80);
 		}
 	}
 
 	void Exp() {
 		Term();
-		while (la.kind == 66 || la.kind == 67) {
+		while (la.kind == 66 || la.kind == 67 || la.kind == 68) {
 			Addop();
 			Term();
 		}
@@ -445,7 +450,7 @@ public class Parser {
 		} else if (la.kind == 42) {
 			Get();
 			ID();
-		} else SynErr(84);
+		} else SynErr(88);
 	}
 
 	void AgentEvent() {
@@ -465,7 +470,7 @@ public class Parser {
 		} else if (la.kind == 44) {
 			Get();
 			Expect(1);
-		} else SynErr(85);
+		} else SynErr(89);
 	}
 
 	void Block() {
@@ -485,17 +490,17 @@ public class Parser {
 			RepeatLoop();
 		} else if (la.kind == 45) {
 			Loop();
-		} else SynErr(86);
+		} else SynErr(90);
 	}
 
 	void IfStatement() {
 		Expect(54);
-		Condition();
+		Conditions();
 		Expect(55);
 		Statement();
 		while (la.kind == 56) {
 			Get();
-			Condition();
+			Conditions();
 			Expect(55);
 			Statement();
 		}
@@ -568,7 +573,7 @@ public class Parser {
 
 	void WhileLoop() {
 		Expect(46);
-		Condition();
+		Conditions();
 		Expect(47);
 		Statement();
 		Expect(17);
@@ -578,7 +583,7 @@ public class Parser {
 		Expect(48);
 		Statement();
 		Expect(49);
-		Condition();
+		Conditions();
 		Expect(17);
 	}
 
@@ -588,10 +593,12 @@ public class Parser {
 		Expect(17);
 	}
 
-	void Condition() {
-		Exp();
-		Relop();
-		Exp();
+	void Conditions() {
+		Condition();
+		while (la.kind == 63 || la.kind == 64) {
+			Boolop();
+			Condition();
+		}
 	}
 
 	void Scenario() {
@@ -617,7 +624,7 @@ public class Parser {
 			ID();
 			Expect(15);
 			ActionPattern();
-		} else SynErr(87);
+		} else SynErr(91);
 		if (la.kind == 63 || la.kind == 64 || la.kind == 65) {
 			if (la.kind == 63) {
 				Get();
@@ -649,7 +656,7 @@ public class Parser {
 
 	void Term() {
 		Factor();
-		while (la.kind == 68 || la.kind == 69 || la.kind == 70) {
+		while (la.kind == 69 || la.kind == 70 || la.kind == 71) {
 			Mulop();
 			Factor();
 		}
@@ -660,16 +667,30 @@ public class Parser {
 			Get();
 		} else if (la.kind == 67) {
 			Get();
-		} else SynErr(88);
+		} else if (la.kind == 68) {
+			Get();
+		} else SynErr(92);
+	}
+
+	void Condition() {
+		Exp();
+		if (StartOf(5)) {
+			Relop();
+			Exp();
+		}
+	}
+
+	void Boolop() {
+		if (la.kind == 63) {
+			Get();
+		} else if (la.kind == 64) {
+			Get();
+		} else SynErr(93);
 	}
 
 	void Relop() {
 		switch (la.kind) {
 		case 20: {
-			Get();
-			break;
-		}
-		case 71: {
 			Get();
 			break;
 		}
@@ -689,24 +710,31 @@ public class Parser {
 			Get();
 			break;
 		}
-		default: SynErr(89); break;
+		case 76: {
+			Get();
+			break;
+		}
+		default: SynErr(94); break;
 		}
 	}
 
 	void Mulop() {
-		if (la.kind == 68) {
-			Get();
-		} else if (la.kind == 69) {
+		if (la.kind == 69) {
 			Get();
 		} else if (la.kind == 70) {
 			Get();
-		} else SynErr(90);
+		} else if (la.kind == 71) {
+			Get();
+		} else SynErr(95);
 	}
 
 	void Factor() {
 		if (la.kind == 2) {
 			Get();
-		} else if (la.kind == 1) {
+		} else if (la.kind == 1 || la.kind == 77) {
+			if (la.kind == 77) {
+				Get();
+			}
 			Designator();
 		} else if (la.kind == 35) {
 			Get();
@@ -716,7 +744,7 @@ public class Parser {
 			Get();
 		} else if (la.kind == 5) {
 			Get();
-		} else SynErr(91);
+		} else SynErr(96);
 	}
 
 
@@ -731,11 +759,12 @@ public class Parser {
 	}
 
 	private static final boolean[][] set = {
-		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, T,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, T,T,T,T, T,T,T,x, T,x,T,x, x,T,T,x, x,x,T,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,T,T,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x}
+		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, T,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, T,T,T,T, T,T,T,x, T,x,T,x, x,T,T,x, x,x,T,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,T,T,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, x,x,x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x,x,x}
 
 	};
 } // end Parser
@@ -828,30 +857,35 @@ class Errors {
 			case 65: s = "\"xor\" expected"; break;
 			case 66: s = "\"+\" expected"; break;
 			case 67: s = "\"-\" expected"; break;
-			case 68: s = "\"*\" expected"; break;
-			case 69: s = "\"/\" expected"; break;
-			case 70: s = "\"%\" expected"; break;
-			case 71: s = "\"!=\" expected"; break;
-			case 72: s = "\">\" expected"; break;
-			case 73: s = "\">=\" expected"; break;
-			case 74: s = "\"<\" expected"; break;
-			case 75: s = "\"<=\" expected"; break;
-			case 76: s = "\".\" expected"; break;
-			case 77: s = "??? expected"; break;
-			case 78: s = "invalid StructureType"; break;
-			case 79: s = "invalid TypeExp"; break;
-			case 80: s = "invalid PrimitiveType"; break;
-			case 81: s = "invalid Statement"; break;
-			case 82: s = "invalid Statement"; break;
-			case 83: s = "invalid EnvDec"; break;
-			case 84: s = "invalid CasteEvent"; break;
-			case 85: s = "invalid AgentEvent"; break;
-			case 86: s = "invalid LoopStatement"; break;
-			case 87: s = "invalid Scenario"; break;
-			case 88: s = "invalid Addop"; break;
-			case 89: s = "invalid Relop"; break;
-			case 90: s = "invalid Mulop"; break;
-			case 91: s = "invalid Factor"; break;
+			case 68: s = "\"++\" expected"; break;
+			case 69: s = "\"*\" expected"; break;
+			case 70: s = "\"/\" expected"; break;
+			case 71: s = "\"%\" expected"; break;
+			case 72: s = "\"!=\" expected"; break;
+			case 73: s = "\">\" expected"; break;
+			case 74: s = "\">=\" expected"; break;
+			case 75: s = "\"<\" expected"; break;
+			case 76: s = "\"<=\" expected"; break;
+			case 77: s = "\"not\" expected"; break;
+			case 78: s = "\".\" expected"; break;
+			case 79: s = "\"[\" expected"; break;
+			case 80: s = "\"]\" expected"; break;
+			case 81: s = "??? expected"; break;
+			case 82: s = "invalid StructureType"; break;
+			case 83: s = "invalid TypeExp"; break;
+			case 84: s = "invalid PrimitiveType"; break;
+			case 85: s = "invalid Statement"; break;
+			case 86: s = "invalid Statement"; break;
+			case 87: s = "invalid EnvDec"; break;
+			case 88: s = "invalid CasteEvent"; break;
+			case 89: s = "invalid AgentEvent"; break;
+			case 90: s = "invalid LoopStatement"; break;
+			case 91: s = "invalid Scenario"; break;
+			case 92: s = "invalid Addop"; break;
+			case 93: s = "invalid Boolop"; break;
+			case 94: s = "invalid Relop"; break;
+			case 95: s = "invalid Mulop"; break;
+			case 96: s = "invalid Factor"; break;
 			default: s = "error " + n; break;
 		}
 		printMsg(line, col, s);

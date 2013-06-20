@@ -30,8 +30,11 @@ public class main {
         Scanner scanner = new Scanner(testFile);
         Parser parser = new Parser(scanner);
         parser.Parse();
+
     }
     //*/
+
+
 
     /* Main
     public static void main(String args[]) {

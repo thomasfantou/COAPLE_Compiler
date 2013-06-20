@@ -78,6 +78,7 @@ public class Parser {
         and_		= 61,
         or_			= 62,
         xor_		= 63,
+        not_        = 64,
         plus        = 100,
         minus       = 101,
         times       = 102,
@@ -103,7 +104,9 @@ public class Parser {
         aslash      = 122,
         effect      = 123,
         apostr      = 124,
-        quote       = 125;
+        quote       = 125,
+        excl        = 126,
+        concat      = 127;
 	
 
 	public Parser(Scanner scanner) {
@@ -283,6 +286,7 @@ public class Parser {
 		} else if (la.kind == string_) {
 			Get();
 		} else SynErr(73);
+
 	}
 
     //ID =
@@ -593,31 +597,49 @@ public class Parser {
 	}
 
     //Designator =
-    //  ident { "." ident }.
+    //  ident { "." ident } ["[" Exp "]"].
 	void Designator() {
 		Expect(ident);
-		while (la.kind == lbrace) {
+		while (la.kind == period) {
 			Get();
 			Expect(ident);
 		}
+        if (la.kind == lbrack) {
+            Get();
+            Exp();
+            Expect(rbrack);
+        }
 	}
 
     //Exp =
     //    Term {Addop Term}.
 	void Exp() {
 		Term();
-		while (la.kind == plus || la.kind == minus) {
+		while (la.kind == plus || la.kind == minus || la.kind == concat) {
 			Addop();
 			Term();
 		}
 	}
 
+    //Conditions =
+    //  Condition {Boolop Condition}.
+    void Conditions() {
+        Condition();
+        while(la.kind == and_ || la.kind == or_) {
+            Boolop();
+            Condition();
+        }
+    }
+
     //Condition =
-    //  Exp Relop Exp.
+    //  Exp [Relop Exp].
     void Condition() {
         Exp();
-        Relop();
-        Exp();
+        if(la.kind == neq || la.kind == gtr || la.kind == geq
+                || la.kind == lss || la.kind == leq || la.kind == eqlSign) {
+            Relop();
+            Exp();
+        }
     }
 
     //CasteEvent =
@@ -687,18 +709,18 @@ public class Parser {
 	}
 
     //IfStatement =
-    //    "if" Condition "then" Statement
-    //    {"elseif" Condition "then" Statement}
+    //    "if" Conditions "then" Statement
+    //    {"elseif" Conditions "then" Statement}
     //    ["else" Statement]
     //    "end".
 	void IfStatement() {
 		Expect(if_);
-        Condition();
+        Conditions();
 		Expect(then_);
 		Statement();
 		while (la.kind == elseif_) {
 			Get();
-            Condition();
+            Conditions();
 			Expect(then_);
 			Statement();
 		}
@@ -787,22 +809,22 @@ public class Parser {
 	}
 
     //WhileLoop =
-    //  "while" Condition "do" Statement "end".
+    //  "while" Conditions "do" Statement "end".
 	void WhileLoop() {
 		Expect(while_);
-        Condition();
+        Conditions();
 		Expect(do_);
 		Statement();
 		Expect(end_);
 	}
 
     //RepeatLoop =
-    //  "repeat" Statement "until" Condition "end".
+    //  "repeat" Statement "until" Conditions "end".
 	void RepeatLoop() {
 		Expect(repeat_);
 		Statement();
 		Expect(until_);
-        Condition();
+        Conditions();
 		Expect(end_);
 	}
 
@@ -887,13 +909,16 @@ public class Parser {
 	}
 
     //Addop =
-    //  "+" | "-".
+    //  "+" | "-" | "++".
 	void Addop() {
 		if (la.kind == plus) {
 			Get();
 		} else if (la.kind == minus) {
 			Get();
-		} else SynErr(81);
+		}
+        else if (la.kind == concat) {
+            Get();
+        } else SynErr(81);
 	}
 
     //Mulop =
@@ -916,16 +941,24 @@ public class Parser {
             Get();
     }
 
+    //Boolop =
+    //  "and" | "or".
+    void Boolop() {
+        if(la.kind == and_ || la.kind == or_)
+            Get();
+    }
+
     //Factor =
     //  number
-    //  | Designator
+    //  | ["not"] Designator
     //  | "(" Exp ")"
     //  | charVal
     //  | stringVal.
 	void Factor() {
 		if (la.kind == number) {
 			Get();
-		} else if (la.kind == ident) {
+		} else if (la.kind == ident || la.kind == not_) {
+            if(la.kind == not_) Get();
 			Designator();
 		} else if (la.kind == lpar) {
 			Get();
@@ -963,8 +996,8 @@ public class Parser {
 
 class Errors {
 	public int count = 0;                                    // number of errors detected
-	public java.io.PrintStream errorStream = System.out;     // error messages go to this stream
-	public String errMsgFormat = "-- line {0} col {1}: {2}"; // 0=line, 1=column, 2=text
+    public java.io.PrintStream errorStream = System.out;     // error messages go to this stream
+    public String errMsgFormat = "-- line {0} col {1}: {2}"; // 0=line, 1=column, 2=text
 	
 	protected void printMsg(int line, int column, String msg) {
 		StringBuffer b = new StringBuffer(errMsgFormat);
@@ -974,7 +1007,7 @@ class Errors {
 		if (pos >= 0) { b.delete(pos, pos+3); b.insert(pos, column); }
 		pos = b.indexOf("{2}");
 		if (pos >= 0) b.replace(pos, pos+3, msg);
-		errorStream.println(b.toString());
+        errorStream.println(b.toString());
 	}
 	
 	public void SynErr (int line, int col, int n) {
@@ -985,7 +1018,6 @@ class Errors {
 			case 2: s = "number expected"; break;
 			case 3: s = "url expected"; break;
 			case 4: s = "\"type\" expected"; break;
-			case 5: s = "\",\" expected"; break;
 			case 6: s = "\"integer\" expected"; break;
 			case 7: s = "\"real\" expected"; break;
 			case 8: s = "\"bool\" expected"; break;
@@ -993,12 +1025,9 @@ class Errors {
 			case 10: s = "\"string\" expected"; break;
 			case 11: s = "\"record\" expected"; break;
 			case 12: s = "\"of\" expected"; break;
-			case 13: s = "\":\" expected"; break;
-			case 14: s = "\";\" expected"; break;
 			case 15: s = "\"end\" expected"; break;
 			case 16: s = "\"list\" expected"; break;
 			case 17: s = "\"enumerate\" expected"; break;
-			case 18: s = "\"=\" expected"; break;
 			case 19: s = "\"caste\" expected"; break;
 			case 20: s = "\"init\" expected"; break;
 			case 21: s = "\"body\" expected"; break;
@@ -1007,14 +1036,9 @@ class Errors {
 			case 24: s = "\"all\" expected"; break;
 			case 25: s = "\"in\" expected"; break;
 			case 26: s = "\"var\" expected"; break;
-			case 27: s = "\":=\" expected"; break;
 			case 28: s = "\"set\" expected"; break;
-			case 29: s = "\"{\" expected"; break;
-			case 30: s = "\"}\" expected"; break;
 			case 31: s = "\"state\" expected"; break;
 			case 32: s = "\"action\" expected"; break;
-			case 33: s = "\"(\" expected"; break;
-			case 34: s = "\")\" expected"; break;
 			case 35: s = "\"affect\" expected"; break;
 			case 36: s = "\"begin\" expected"; break;
 			case 37: s = "\"join\" expected"; break;
@@ -1037,19 +1061,12 @@ class Errors {
 			case 54: s = "\"elseif\" expected"; break;
 			case 55: s = "\"else\" expected"; break;
 			case 56: s = "\"case\" expected"; break;
-			case 57: s = "\"->\" expected"; break;
 			case 58: s = "\"with\" expected"; break;
 			case 59: s = "\"when\" expected"; break;
 			case 60: s = "\"exist\" expected"; break;
 			case 61: s = "\"and\" expected"; break;
 			case 62: s = "\"or\" expected"; break;
 			case 63: s = "\"xor\" expected"; break;
-			case 64: s = "\"+\" expected"; break;
-			case 65: s = "\"-\" expected"; break;
-			case 66: s = "\"*\" expected"; break;
-			case 67: s = "\"/\" expected"; break;
-			case 68: s = "\"%\" expected"; break;
-			case 69: s = "\".\" expected"; break;
 			case 70: s = "??? expected"; break;
 			case 71: s = "invalid StructureType"; break;
 			case 72: s = "invalid TypeExp"; break;
@@ -1064,6 +1081,31 @@ class Errors {
 			case 81: s = "invalid Addop"; break;
 			case 82: s = "invalid Mulop"; break;
 			case 83: s = "invalid Factor"; break;
+            case 100: s = "\"+\" expected"; break;
+            case 101: s = "\"-\" expected"; break;
+            case 102: s = "\"*\" expected"; break;
+            case 103: s = "\"/\" expected"; break;
+            case 104: s = "\"%\" expected"; break;
+            case 105: s = "\"=\" expected"; break;
+            case 106: s = "\"!=\" expected"; break;
+            case 107: s = "\"<\" expected"; break;
+            case 108: s = "\"<=\" expected"; break;
+            case 109: s = "\">\" expected"; break;
+            case 110: s = "\">=\" expected"; break;
+            case 111: s = "\":=\" expected"; break;
+            case 112: s = "\";\" expected"; break;
+            case 113: s = "\":\" expected"; break;
+            case 114: s = "\",\" expected"; break;
+            case 115: s = "\".\" expected"; break;
+            case 116: s = "\"(\" expected"; break;
+            case 117: s = "\")\" expected"; break;
+            case 118: s = "\"[\" expected"; break;
+            case 119: s = "\"]\" expected"; break;
+            case 120: s = "\"{\" expected"; break;
+            case 121: s = "\"}\" expected"; break;
+            case 123: s = "\"->\" expected"; break;
+            case 124: s = "\"\'\" expected"; break;
+            case 125: s = "\"\"\" expected"; break;
 			default: s = "error " + n; break;
 		}
 		printMsg(line, col, s);

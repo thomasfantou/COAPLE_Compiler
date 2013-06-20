@@ -277,7 +277,7 @@ public class Scanner {
     private static final int  // token and char codes
         none        = 0,
         ident       = 1,
-        letter      = 201,
+        identChar   = 201,
         number      = 2,
         digit       = 202,
         atsign      = 3,
@@ -333,6 +333,7 @@ public class Scanner {
         and_		= 61,
         or_			= 62,
         xor_		= 63,
+        not_        = 64,
         plus        = 100,
         minus       = 101,
         times       = 102,
@@ -358,13 +359,15 @@ public class Scanner {
         aslash      = 122,
         effect      = 123,
         apostr      = 124,
-        quote       = 125;
+        quote       = 125,
+        excl        = 126,
+        concat      = 127;
 
 	static {
 		start = new StartStates();
 		literals = new HashMap();
-		for (int i = 65; i <= 90; ++i) start.set(i, letter);
-		for (int i = 97; i <= 122; ++i) start.set(i, letter);
+		for (int i = 65; i <= 90; ++i) start.set(i, identChar);
+		for (int i = 97; i <= 122; ++i) start.set(i, identChar);
 		for (int i = 48; i <= 57; ++i) start.set(i, digit);
 		for (int i = 64; i <= 64; ++i) start.set(i, atsign);
 		start.set(44, comma);       // ,
@@ -375,6 +378,8 @@ public class Scanner {
 		start.set(125, rbrace);     // }
 		start.set(40, lpar);        // (
 		start.set(41, rpar);        // )
+        start.set(91, lbrack);      // [
+        start.set(93, rbrack);      // ]
 		start.set(45, minus);       // -
 		start.set(43, plus);        // +
 		start.set(42, times);       // *
@@ -382,8 +387,12 @@ public class Scanner {
 		start.set(37, rem);         // %
         start.set(46, period);      // .
         start.set(39, apostr);      // '
-        start.set(34, quote);      // "
-		start.set(Buffer.EOF, -1);
+        start.set(34, quote);       // "
+        start.set(95, identChar);   // _
+        start.set(33, excl);        // !
+        start.set(60, lss);         // <
+        start.set(62, gtr);         // >
+        start.set(Buffer.EOF, -1);
 		literals.put("type", new Integer(type_));
 		literals.put("integer", new Integer(integer_));
 		literals.put("real", new Integer(real_));
@@ -434,6 +443,7 @@ public class Scanner {
 		literals.put("and", new Integer(and_));
 		literals.put("or", new Integer(or_));
 		literals.put("xor", new Integer(xor_));
+        literals.put("not", new Integer(not_));
 
 	}
 	
@@ -574,9 +584,9 @@ public class Scanner {
 					}
 					t.kind = recKind; break loop;
 				} // NextCh already done
-				case letter:
+				case identChar:
 					recEnd = pos; recKind = 1;
-					if (ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z') {AddCh(); state = letter; break;}
+                    if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); state = identChar; break;}
 					else {t.kind = ident; t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}
 				case digit:
 					recEnd = pos; recKind = 2;
@@ -592,11 +602,11 @@ public class Scanner {
 					{t.kind = semicolon; break loop;}
 				case eqlSign:                                       // =
 					{t.kind = eqlSign; break loop;}
-                case lpar:                                          //  (
+                case lpar:                                          // (
                     {t.kind = lpar; break loop;}
                 case rpar:                                          // )
                     {t.kind = rpar; break loop;}
-				case lbrack:                                        //  [
+				case lbrack:                                        // [
 					{t.kind = lbrack; break loop;}
 				case rbrack:                                        // ]
 					{t.kind = rbrack; break loop;}
@@ -605,7 +615,11 @@ public class Scanner {
 				case rbrace:                                        // }
 					{t.kind = rbrace; break loop;}
 				case plus:                                          // +
-					{t.kind = plus; break loop;}
+                    recEnd = pos; recKind = plus;
+                    if (ch == '+') {AddCh(); state = concat; break;}
+                    else {t.kind = plus; break loop;}
+                case concat:                                        // ++
+                    {t.kind = concat; break loop;}
 				case times:                                         // *
 					{t.kind = times; break loop;}
 				case slash:                                         // /
@@ -614,6 +628,23 @@ public class Scanner {
 					{t.kind = rem; break loop;}
 				case period:                                        // .
 					{t.kind = period; break loop;}
+                case lss:                                           // <
+                    recEnd = pos; recKind = lss;
+                    if (ch == '=') {AddCh(); state = leq; break;}
+                    else {t.kind = lss; break loop;}
+                case leq:                                           // <=
+                    {t.kind = leq; break loop;}
+                case gtr:                                           // >
+                    recEnd = pos; recKind = gtr;
+                    if (ch == '=') {AddCh(); state = geq; break;}
+                    else {t.kind = gtr; break loop;}
+                case geq:                                           // >=
+                    {t.kind = geq; break loop;}
+                case excl:                                          // !
+                    if (ch == '=') {AddCh(); state = neq; break; }
+                    else {state = 0; break;}
+                case neq:                                           // !=
+                    {t.kind = neq; break loop;}
                 case apostr:                                        // '
                     if (ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z') {AddCh(); state = charVal; break;}
                     else {t.kind = apostr; break loop;}
@@ -621,12 +652,13 @@ public class Scanner {
                     if (ch == '\'') {AddCh(); t.kind = charVal; break loop; }
                     else {state = 0; break;}
                 case quote:                                         // "
-                    if (ch == '"') {
-                        AddCh(); state = stringVal; break;}
-                    else if (ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z') {AddCh(); state = quote; break;}
+                    if (ch <= '!' || ch >= '#' && ch <= 65535) {AddCh(); state = stringVal; break;}
                     else {t.kind = quote; break loop;}
                 case stringVal:
-                    {t.kind = stringVal; break loop;}
+                    if (ch == '"') {
+                        AddCh(); t.kind = stringVal; break loop;}
+                    else if (ch <= '!' || ch >= '#' && ch <= 65535) {AddCh(); state = stringVal; break; }
+                    else {state = 0; break;}
                 case colon:                                         // :
 					recEnd = pos; recKind = colon;
 					if (ch == '=') {AddCh(); state = assign; break;}

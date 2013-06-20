@@ -252,8 +252,8 @@ class StartStates {
 public class Scanner {
 	static final char EOL = '\n';
 	static final int  eofSym = 0;
-	static final int maxT = 77;
-	static final int noSym = 77;
+	static final int maxT = 81;
+	static final int noSym = 81;
 
 
 	public Buffer buffer; // scanner buffer
@@ -279,28 +279,31 @@ public class Scanner {
 		start = new StartStates();
 		literals = new HashMap();
 		for (int i = 65; i <= 90; ++i) start.set(i, 1);
+		for (int i = 95; i <= 95; ++i) start.set(i, 1);
 		for (int i = 97; i <= 122; ++i) start.set(i, 1);
 		for (int i = 48; i <= 57; ++i) start.set(i, 2);
 		for (int i = 64; i <= 64; ++i) start.set(i, 3);
 		for (int i = 39; i <= 39; ++i) start.set(i, 4);
 		for (int i = 34; i <= 34; ++i) start.set(i, 7);
 		start.set(44, 10); 
-		start.set(58, 28); 
+		start.set(58, 30); 
 		start.set(59, 11); 
 		start.set(61, 12); 
 		start.set(123, 14); 
 		start.set(125, 15); 
 		start.set(40, 16); 
 		start.set(41, 17); 
-		start.set(45, 29); 
-		start.set(43, 19); 
+		start.set(45, 31); 
+		start.set(43, 32); 
 		start.set(42, 20); 
 		start.set(47, 21); 
 		start.set(37, 22); 
 		start.set(33, 23); 
-		start.set(62, 30); 
-		start.set(60, 31); 
+		start.set(62, 33); 
+		start.set(60, 34); 
 		start.set(46, 27); 
+		start.set(91, 28); 
+		start.set(93, 29); 
 		start.set(Buffer.EOF, -1);
 		literals.put("type", new Integer(6));
 		literals.put("integer", new Integer(8));
@@ -352,6 +355,7 @@ public class Scanner {
 		literals.put("and", new Integer(63));
 		literals.put("or", new Integer(64));
 		literals.put("xor", new Integer(65));
+		literals.put("not", new Integer(77));
 
 	}
 	
@@ -493,7 +497,7 @@ public class Scanner {
 				} // NextCh already done
 				case 1:
 					recEnd = pos; recKind = 1;
-					if (ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z') {AddCh(); state = 1; break;}
+					if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); state = 1; break;}
 					else {t.kind = 1; t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}
 				case 2:
 					recEnd = pos; recKind = 2;
@@ -512,11 +516,11 @@ public class Scanner {
 				case 6:
 					{t.kind = 4; break loop;}
 				case 7:
-					if (ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z') {AddCh(); state = 8; break;}
+					if (ch <= '!' || ch >= '#' && ch <= 65535) {AddCh(); state = 8; break;}
 					else {state = 0; break;}
 				case 8:
 					if (ch == '"') {AddCh(); state = 9; break;}
-					else if (ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z') {AddCh(); state = 8; break;}
+					else if (ch <= '!' || ch >= '#' && ch <= 65535) {AddCh(); state = 8; break;}
 					else {state = 0; break;}
 				case 9:
 					{t.kind = 5; break loop;}
@@ -539,40 +543,48 @@ public class Scanner {
 				case 18:
 					{t.kind = 59; break loop;}
 				case 19:
-					{t.kind = 66; break loop;}
-				case 20:
 					{t.kind = 68; break loop;}
-				case 21:
+				case 20:
 					{t.kind = 69; break loop;}
-				case 22:
+				case 21:
 					{t.kind = 70; break loop;}
+				case 22:
+					{t.kind = 71; break loop;}
 				case 23:
 					if (ch == '=') {AddCh(); state = 24; break;}
 					else {state = 0; break;}
 				case 24:
-					{t.kind = 71; break loop;}
+					{t.kind = 72; break loop;}
 				case 25:
-					{t.kind = 73; break loop;}
+					{t.kind = 74; break loop;}
 				case 26:
-					{t.kind = 75; break loop;}
-				case 27:
 					{t.kind = 76; break loop;}
+				case 27:
+					{t.kind = 78; break loop;}
 				case 28:
+					{t.kind = 79; break loop;}
+				case 29:
+					{t.kind = 80; break loop;}
+				case 30:
 					recEnd = pos; recKind = 15;
 					if (ch == '=') {AddCh(); state = 13; break;}
 					else {t.kind = 15; break loop;}
-				case 29:
+				case 31:
 					recEnd = pos; recKind = 67;
 					if (ch == '>') {AddCh(); state = 18; break;}
 					else {t.kind = 67; break loop;}
-				case 30:
-					recEnd = pos; recKind = 72;
+				case 32:
+					recEnd = pos; recKind = 66;
+					if (ch == '+') {AddCh(); state = 19; break;}
+					else {t.kind = 66; break loop;}
+				case 33:
+					recEnd = pos; recKind = 73;
 					if (ch == '=') {AddCh(); state = 25; break;}
-					else {t.kind = 72; break loop;}
-				case 31:
-					recEnd = pos; recKind = 74;
+					else {t.kind = 73; break loop;}
+				case 34:
+					recEnd = pos; recKind = 75;
 					if (ch == '=') {AddCh(); state = 26; break;}
-					else {t.kind = 74; break loop;}
+					else {t.kind = 75; break loop;}
 
 			}
 		}

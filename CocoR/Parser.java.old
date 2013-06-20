@@ -421,7 +421,7 @@ public class Parser {
 
 	void Exp() {
 		Term();
-		while (la.kind == 66 || la.kind == 67) {
+		while (la.kind == 66 || la.kind == 67 || la.kind == 68) {
 			Addop();
 			Term();
 		}
@@ -490,12 +490,12 @@ public class Parser {
 
 	void IfStatement() {
 		Expect(54);
-		Condition();
+		Conditions();
 		Expect(55);
 		Statement();
 		while (la.kind == 56) {
 			Get();
-			Condition();
+			Conditions();
 			Expect(55);
 			Statement();
 		}
@@ -568,7 +568,7 @@ public class Parser {
 
 	void WhileLoop() {
 		Expect(46);
-		Condition();
+		Conditions();
 		Expect(47);
 		Statement();
 		Expect(17);
@@ -578,7 +578,7 @@ public class Parser {
 		Expect(48);
 		Statement();
 		Expect(49);
-		Condition();
+		Conditions();
 		Expect(17);
 	}
 
@@ -588,10 +588,12 @@ public class Parser {
 		Expect(17);
 	}
 
-	void Condition() {
-		Exp();
-		Relop();
-		Exp();
+	void Conditions() {
+		Condition();
+		while (la.kind == 63 || la.kind == 64) {
+			Boolop();
+			Condition();
+		}
 	}
 
 	void Scenario() {
@@ -649,7 +651,7 @@ public class Parser {
 
 	void Term() {
 		Factor();
-		while (la.kind == 68 || la.kind == 69 || la.kind == 70) {
+		while (la.kind == 69 || la.kind == 70 || la.kind == 71) {
 			Mulop();
 			Factor();
 		}
@@ -660,16 +662,30 @@ public class Parser {
 			Get();
 		} else if (la.kind == 67) {
 			Get();
+		} else if (la.kind == 68) {
+			Get();
 		} else SynErr(90);
+	}
+
+	void Condition() {
+		Exp();
+		if (StartOf(5)) {
+			Relop();
+			Exp();
+		}
+	}
+
+	void Boolop() {
+		if (la.kind == 63) {
+			Get();
+		} else if (la.kind == 64) {
+			Get();
+		} else SynErr(91);
 	}
 
 	void Relop() {
 		switch (la.kind) {
 		case 20: {
-			Get();
-			break;
-		}
-		case 71: {
 			Get();
 			break;
 		}
@@ -689,38 +705,41 @@ public class Parser {
 			Get();
 			break;
 		}
-		default: SynErr(91); break;
+		case 76: {
+			Get();
+			break;
+		}
+		default: SynErr(92); break;
 		}
 	}
 
 	void Mulop() {
-		if (la.kind == 68) {
-			Get();
-		} else if (la.kind == 69) {
+		if (la.kind == 69) {
 			Get();
 		} else if (la.kind == 70) {
 			Get();
-		} else SynErr(92);
+		} else if (la.kind == 71) {
+			Get();
+		} else SynErr(93);
 	}
 
 	void Factor() {
 		if (la.kind == 2) {
 			Get();
-		} else if (la.kind == 1) {
+		} else if (la.kind == 1 || la.kind == 77) {
+			if (la.kind == 77) {
+				Get();
+			}
 			Designator();
 		} else if (la.kind == 35) {
 			Get();
 			Exp();
 			Expect(36);
-		} else if (la.kind == 76) {
+		} else if (la.kind == 4) {
 			Get();
-			Expect(1);
-			Expect(76);
-		} else if (la.kind == 77) {
+		} else if (la.kind == 5) {
 			Get();
-			Expect(1);
-			Expect(77);
-		} else SynErr(93);
+		} else SynErr(94);
 	}
 
 
@@ -739,7 +758,8 @@ public class Parser {
 		{x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
 		{x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, T,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
 		{x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, T,T,T,T, T,T,T,x, T,x,T,x, x,T,T,x, x,x,T,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
-		{x,T,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,x,x, x}
+		{x,T,T,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x}
 
 	};
 } // end Parser
@@ -832,16 +852,16 @@ class Errors {
 			case 65: s = "\"xor\" expected"; break;
 			case 66: s = "\"+\" expected"; break;
 			case 67: s = "\"-\" expected"; break;
-			case 68: s = "\"*\" expected"; break;
-			case 69: s = "\"/\" expected"; break;
-			case 70: s = "\"%\" expected"; break;
-			case 71: s = "\"!=\" expected"; break;
-			case 72: s = "\">\" expected"; break;
-			case 73: s = "\">=\" expected"; break;
-			case 74: s = "\"<\" expected"; break;
-			case 75: s = "\"<=\" expected"; break;
-			case 76: s = "\"\\\"\" expected"; break;
-			case 77: s = "\"\\\'\" expected"; break;
+			case 68: s = "\"++\" expected"; break;
+			case 69: s = "\"*\" expected"; break;
+			case 70: s = "\"/\" expected"; break;
+			case 71: s = "\"%\" expected"; break;
+			case 72: s = "\"!=\" expected"; break;
+			case 73: s = "\">\" expected"; break;
+			case 74: s = "\">=\" expected"; break;
+			case 75: s = "\"<\" expected"; break;
+			case 76: s = "\"<=\" expected"; break;
+			case 77: s = "\"not\" expected"; break;
 			case 78: s = "\".\" expected"; break;
 			case 79: s = "??? expected"; break;
 			case 80: s = "invalid StructureType"; break;
@@ -855,9 +875,10 @@ class Errors {
 			case 88: s = "invalid LoopStatement"; break;
 			case 89: s = "invalid Scenario"; break;
 			case 90: s = "invalid Addop"; break;
-			case 91: s = "invalid Relop"; break;
-			case 92: s = "invalid Mulop"; break;
-			case 93: s = "invalid Factor"; break;
+			case 91: s = "invalid Boolop"; break;
+			case 92: s = "invalid Relop"; break;
+			case 93: s = "invalid Mulop"; break;
+			case 94: s = "invalid Factor"; break;
 			default: s = "error " + n; break;
 		}
 		printMsg(line, col, s);

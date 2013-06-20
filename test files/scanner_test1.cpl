@@ -1,7 +1,8 @@
-test()
 // identifiers
 x 
 Just4Fun
+_ola
+_meth0d
 
 // numbers
 0
@@ -10,9 +11,7 @@ Just4Fun
 
 // character constants
 'x'
-'\r'
-'\n'
-'\t'
+'D'
 
 // operators
 +  // plus
@@ -20,13 +19,13 @@ Just4Fun
 *  // times
 /  // slash
 %  // rem
-== // eql
+=  // eql
 != // neq
 <  // lss
 <= // leq
 >  // gtr
 >= // geq
-=  // assign
+:= // assign
 ;  // semicolon
 :  // colon
 ,  // comma
@@ -37,24 +36,64 @@ Just4Fun
 ]  // rbrack
 {  // lbrace
 }  // rbrace
+++ // concat
 
 // keywords
-class
-else
-final
-if
-new
-print
-program
-read
-return
-void
+type
+integer
+real
+bool
+char
+string
+record
+of
+end
+list
+enumerate
+caste
+init
+body
+inherits
+observes
+all
+in
+var
+set
+state
+action
+affect
+begin
+join
+quit
+suspend
+resume
+create
+destroy
+loop
 while
+do
+repeat
+until
+for
+to
+by
+forall
+if
+then
+elseif
+else
+case
+with
+when
+exist
+and
+or
+xor
 
 // illegal number
 9999999999
 
-// illegal character constants
+// illegal character constants //To fix in V2
 'abc'
 '\rx'
 ''
@@ -63,11 +102,3 @@ while
 // unknown token
 $
 
-type
-,
-;
-integer
-bool
-=
-{
-real
