@@ -97,10 +97,10 @@ public class Parser {
 	void TypeDec() {
 		Expect(6);
 		StructureType();
-		while (la.kind == 7) {
-			Get();
-			TypeExp();
+		while (la.kind == 13 || la.kind == 18 || la.kind == 19) {
+			StructureType();
 		}
+		Expect(7);
 	}
 
 	void CasteDec() {
@@ -109,7 +109,7 @@ public class Parser {
 		if (la.kind == 24) {
 			Inheritances();
 		}
-		Expect(16);
+		Expect(17);
 		if (la.kind == 25) {
 			EnvironmentDecs();
 		}
@@ -129,7 +129,7 @@ public class Parser {
 			ActionDecs();
 		}
 		Statement();
-		Expect(17);
+		Expect(7);
 		Expect(1);
 	}
 
@@ -178,15 +178,17 @@ public class Parser {
 		Expect(13);
 		Expect(1);
 		Expect(14);
-		Expect(1);
-		while (la.kind == 7) {
+		while (la.kind == 1) {
 			Get();
-			Expect(1);
+			while (la.kind == 15) {
+				Get();
+				Expect(1);
+			}
+			Expect(16);
+			TypeExp();
+			Expect(17);
 		}
-		Expect(15);
-		TypeExp();
-		Expect(16);
-		Expect(17);
+		Expect(7);
 	}
 
 	void ListType() {
@@ -194,7 +196,7 @@ public class Parser {
 		Expect(1);
 		Expect(14);
 		TypeExp();
-		Expect(17);
+		Expect(7);
 	}
 
 	void EnumeratedType() {
@@ -202,12 +204,12 @@ public class Parser {
 		Expect(1);
 		Expect(20);
 		IDList();
-		Expect(17);
+		Expect(7);
 	}
 
 	void IDList() {
 		Expect(1);
-		while (la.kind == 7) {
+		while (la.kind == 15) {
 			Get();
 			Expect(1);
 		}
@@ -216,7 +218,7 @@ public class Parser {
 	void Inheritances() {
 		Expect(24);
 		Expect(1);
-		while (la.kind == 7) {
+		while (la.kind == 15) {
 			Get();
 			Expect(1);
 		}
@@ -226,7 +228,7 @@ public class Parser {
 		Expect(25);
 		while (StartOf(2)) {
 			EnvDec();
-			Expect(16);
+			Expect(17);
 		}
 	}
 
@@ -237,10 +239,10 @@ public class Parser {
 
 	void ActionDecs() {
 		ActionDec();
-		Expect(16);
+		Expect(17);
 		while (la.kind == 34) {
 			ActionDec();
-			Expect(16);
+			Expect(17);
 		}
 	}
 
@@ -258,17 +260,17 @@ public class Parser {
 				}
 				Expect(36);
 			} else SynErr(85);
-			Expect(16);
+			Expect(17);
 			break;
 		}
 		case 39: case 40: case 41: case 42: {
 			CasteEvent();
-			Expect(16);
+			Expect(17);
 			break;
 		}
 		case 43: case 44: {
 			AgentEvent();
-			Expect(16);
+			Expect(17);
 			break;
 		}
 		case 38: {
@@ -305,10 +307,10 @@ public class Parser {
 
 	void Decs() {
 		Dec();
-		Expect(16);
+		Expect(17);
 		while (la.kind == 28) {
 			Dec();
-			Expect(16);
+			Expect(17);
 		}
 	}
 
@@ -350,7 +352,7 @@ public class Parser {
 	void AgentSetEnum() {
 		Expect(31);
 		Expect(1);
-		while (la.kind == 7) {
+		while (la.kind == 15) {
 			Get();
 			Expect(1);
 		}
@@ -360,7 +362,7 @@ public class Parser {
 	void Dec() {
 		Expect(28);
 		IDList();
-		Expect(15);
+		Expect(16);
 		TypeExp();
 		if (la.kind == 29) {
 			Get();
@@ -386,7 +388,7 @@ public class Parser {
 
 	void ParameterList() {
 		Parameter();
-		while (la.kind == 7) {
+		while (la.kind == 15) {
 			Get();
 			Parameter();
 		}
@@ -395,7 +397,7 @@ public class Parser {
 	void Impact() {
 		Expect(37);
 		ID();
-		while (la.kind == 7) {
+		while (la.kind == 15) {
 			Get();
 			ID();
 		}
@@ -403,11 +405,11 @@ public class Parser {
 
 	void Parameter() {
 		Expect(1);
-		while (la.kind == 7) {
+		while (la.kind == 15) {
 			Get();
 			Expect(1);
 		}
-		Expect(15);
+		Expect(16);
 		ID();
 	}
 
@@ -478,7 +480,7 @@ public class Parser {
 		while (StartOf(3)) {
 			Statement();
 		}
-		Expect(17);
+		Expect(7);
 	}
 
 	void LoopStatement() {
@@ -508,7 +510,7 @@ public class Parser {
 			Get();
 			Statement();
 		}
-		Expect(17);
+		Expect(7);
 	}
 
 	void CaseStatement() {
@@ -524,7 +526,7 @@ public class Parser {
 			Get();
 			Statement();
 		}
-		Expect(17);
+		Expect(7);
 	}
 
 	void WithStatement() {
@@ -532,7 +534,7 @@ public class Parser {
 		Exp();
 		Expect(47);
 		Statement();
-		Expect(17);
+		Expect(7);
 	}
 
 	void ForAllStatement() {
@@ -542,7 +544,7 @@ public class Parser {
 		Exp();
 		Expect(47);
 		Statement();
-		Expect(17);
+		Expect(7);
 	}
 
 	void WhenStatement() {
@@ -552,7 +554,7 @@ public class Parser {
 			Expect(59);
 			Statement();
 		}
-		Expect(17);
+		Expect(7);
 	}
 
 	void ForLoop() {
@@ -568,7 +570,7 @@ public class Parser {
 		}
 		Expect(47);
 		Statement();
-		Expect(17);
+		Expect(7);
 	}
 
 	void WhileLoop() {
@@ -576,7 +578,7 @@ public class Parser {
 		Conditions();
 		Expect(47);
 		Statement();
-		Expect(17);
+		Expect(7);
 	}
 
 	void RepeatLoop() {
@@ -584,13 +586,13 @@ public class Parser {
 		Statement();
 		Expect(49);
 		Conditions();
-		Expect(17);
+		Expect(7);
 	}
 
 	void Loop() {
 		Expect(45);
 		Statement();
-		Expect(17);
+		Expect(7);
 	}
 
 	void Conditions() {
@@ -608,21 +610,21 @@ public class Parser {
 				Get();
 				ID();
 			}
-			Expect(15);
+			Expect(16);
 			ActionPattern();
 		} else if (la.kind == 62) {
 			Get();
 			Expect(1);
 			Expect(27);
 			ID();
-			Expect(15);
+			Expect(16);
 			ActionPattern();
 		} else if (la.kind == 26) {
 			Get();
 			Expect(1);
 			Expect(27);
 			ID();
-			Expect(15);
+			Expect(16);
 			ActionPattern();
 		} else SynErr(91);
 		if (la.kind == 63 || la.kind == 64 || la.kind == 65) {
@@ -642,7 +644,7 @@ public class Parser {
 		Expect(35);
 		if (StartOf(4)) {
 			PatternPara();
-			while (la.kind == 7) {
+			while (la.kind == 15) {
 				Get();
 				PatternPara();
 			}
@@ -796,7 +798,7 @@ class Errors {
 			case 4: s = "charVal expected"; break;
 			case 5: s = "stringVal expected"; break;
 			case 6: s = "\"type\" expected"; break;
-			case 7: s = "\",\" expected"; break;
+			case 7: s = "\"end\" expected"; break;
 			case 8: s = "\"integer\" expected"; break;
 			case 9: s = "\"real\" expected"; break;
 			case 10: s = "\"bool\" expected"; break;
@@ -804,9 +806,9 @@ class Errors {
 			case 12: s = "\"string\" expected"; break;
 			case 13: s = "\"record\" expected"; break;
 			case 14: s = "\"of\" expected"; break;
-			case 15: s = "\":\" expected"; break;
-			case 16: s = "\";\" expected"; break;
-			case 17: s = "\"end\" expected"; break;
+			case 15: s = "\",\" expected"; break;
+			case 16: s = "\":\" expected"; break;
+			case 17: s = "\";\" expected"; break;
 			case 18: s = "\"list\" expected"; break;
 			case 19: s = "\"enumerate\" expected"; break;
 			case 20: s = "\"=\" expected"; break;

@@ -306,6 +306,7 @@ public class Scanner {
 		start.set(93, 29); 
 		start.set(Buffer.EOF, -1);
 		literals.put("type", new Integer(6));
+		literals.put("end", new Integer(7));
 		literals.put("integer", new Integer(8));
 		literals.put("real", new Integer(9));
 		literals.put("bool", new Integer(10));
@@ -313,7 +314,6 @@ public class Scanner {
 		literals.put("string", new Integer(12));
 		literals.put("record", new Integer(13));
 		literals.put("of", new Integer(14));
-		literals.put("end", new Integer(17));
 		literals.put("list", new Integer(18));
 		literals.put("enumerate", new Integer(19));
 		literals.put("caste", new Integer(21));
@@ -525,9 +525,9 @@ public class Scanner {
 				case 9:
 					{t.kind = 5; break loop;}
 				case 10:
-					{t.kind = 7; break loop;}
+					{t.kind = 15; break loop;}
 				case 11:
-					{t.kind = 16; break loop;}
+					{t.kind = 17; break loop;}
 				case 12:
 					{t.kind = 20; break loop;}
 				case 13:
@@ -566,9 +566,9 @@ public class Scanner {
 				case 29:
 					{t.kind = 80; break loop;}
 				case 30:
-					recEnd = pos; recKind = 15;
+					recEnd = pos; recKind = 16;
 					if (ch == '=') {AddCh(); state = 13; break;}
-					else {t.kind = 15; break loop;}
+					else {t.kind = 16; break loop;}
 				case 31:
 					recEnd = pos; recKind = 67;
 					if (ch == '>') {AddCh(); state = 18; break;}

@@ -1,6 +1,19 @@
+type 
+	record Date of
+		day, month, year: integer;
+		country: string;
+	end
+	list Tour of Date end
+end
+
+type
+	enumerate Color = Red, Green, Blue end
+	list TestResult of bool end
+end
+
 caste Xxx;
 observes
-	all y in Yyy;
+	all in Yyy;
 state
 	var a: string;
 	var bb: integer;

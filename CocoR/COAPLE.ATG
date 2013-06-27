@@ -29,7 +29,7 @@ PRODUCTIONS
 		{TypeDec} {CasteDec}.
 		
 	TypeDec =
-		"type" StructureType {"," TypeExp}.
+		"type" StructureType {StructureType} "end".
 		
 	TypeExp =
 		PrimitiveType
@@ -49,7 +49,7 @@ PRODUCTIONS
 		| EnumeratedType.
 		
 	RecordType =
-		"record" ident "of" ident {"," ident} ":" TypeExp ";"
+		"record" ident "of" { ident {"," ident} ":" TypeExp ";" }
 		"end".
 		
 	ListType =
@@ -81,9 +81,9 @@ PRODUCTIONS
 		
 	EnvDec = 
 		ident
-		| "all" ident "in" ID
-		| "var" IDList "in" ID [":=" AgentID]
-		| "set" IDList "in" ID [":=" AgentSetEnum].
+		| "all" "in" ID
+		| "var" ident "in" ID [":=" AgentID]
+		| "set" ident "in" ID [":=" AgentSetEnum].
 	
 	AgentID	=
 		ident "in" ID.
@@ -117,7 +117,7 @@ PRODUCTIONS
 		Parameter {"," Parameter}.
 	
 	Parameter =
-		ident {"," ident} ":" ID.
+		ident {"," ident} ":" TypeExp.
 		
 	Impact =
 		"affect" ID { "," ID }.

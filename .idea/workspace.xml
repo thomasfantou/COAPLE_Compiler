@@ -5,7 +5,7 @@
     <ignored path="COAPLE_Compiler.iws" />
     <ignored path=".idea/workspace.xml" />
     <file path="/File Header.txt.ft" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1369230021452" ignored="false" />
-    <file path="/main.java" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1371720008943" ignored="false" />
+    <file path="/main.java" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1372325568274" ignored="false" />
     <file path="$APPLICATION_HOME_DIR$/plugins/JSF/lib/jsf-support.jar!/resources/schemas/html_basic.tld" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1371458940028" ignored="false" />
     <file path="$APPLICATION_HOME_DIR$/plugins/JSF/lib/jsf-support.jar!/resources/schemas/xml.xsd" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1371458940028" ignored="false" />
     <file path="$APPLICATION_HOME_DIR$/plugins/JSF/lib/jsf-support.jar!/resources/schemas/html_basic_2_0.tld" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1371458940028" ignored="false" />
@@ -240,10 +240,18 @@
     <file path="$APPLICATION_HOME_DIR$/plugins/WebServices/lib/WebServices.jar!/schemas/resources/jaxrpc-ri-runtime.xml" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1371458940031" ignored="false" />
     <file path="$APPLICATION_HOME_DIR$/plugins/WebServices/lib/WebServices.jar!/schemas/resources/Axis2.services.xml" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1371458940031" ignored="false" />
     <file path="/Scanner.java" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1371758990633" ignored="false" />
-    <file path="/a.java" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1371549876637" ignored="false" />
-    <file path="/Parser.java" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1371758897461" ignored="false" />
-    <file path="$PROJECT_DIR$/CocoR/Parser.java.old" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1371573153337" ignored="false" />
-    <file path="$PROJECT_DIR$/CocoR/Scanner.java.old" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1371573748309" ignored="false" />
+    <file path="/a.java" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1371819282468" ignored="false" />
+    <file path="/Parser.java" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1372330261237" ignored="false" />
+    <file path="$PROJECT_DIR$/CocoR/Parser.java.old" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1371824542894" ignored="false" />
+    <file path="$PROJECT_DIR$/CocoR/Scanner.java.old" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1371824542894" ignored="false" />
+    <file path="/Obj.java" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1372323788860" ignored="false" />
+    <file path="/Struct.java" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1372255641427" ignored="false" />
+    <file path="/Table.java" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1372243328701" ignored="false" />
+    <file path="Z:/Courses/OBU/P00488 Language Specification and Compiler Construction/Compiler04/Deliverable/Micro Java Compiler/src/MJ/SymTab/Tab.java" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1371829734818" ignored="false" />
+    <file path="/Tab.java" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1371829705193" ignored="false" />
+    <file path="Z:/Courses/OBU/P00488 Language Specification and Compiler Construction/Compiler04/Deliverable/Micro Java Compiler/src/MJ/Parser.java" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1371829097348" ignored="false" />
+    <file path="/STab.java" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1372325129789" ignored="false" />
+    <file path="Z:/Courses/OBU/P00488 Language Specification and Compiler Construction/Compiler04/Deliverable/Micro Java Compiler/src/MJ/CodeGen/Code.java" changelist="caeb8ca1-8911-4a0f-bba1-095156889c20" time="1372330858898" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -295,7 +303,23 @@
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
     </breakpoint_any>
-    <line_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true" />
+    <line_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true">
+      <breakpoint url="file://$PROJECT_DIR$/src/co/uk/brookes/Parser.java" line="513" class="co.uk.brookes.Parser" package="co.uk.brookes">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="REMOVE_AFTER_HIT" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="SUSPEND" value="true" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="true" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+    </line_breakpoints>
     <breakpoint_rules />
     <ui_properties />
   </component>
@@ -305,29 +329,27 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="main.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="main.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/co/uk/brookes/main.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="15" column="167" selection-start="350" selection-end="350" vertical-scroll-proportion="0.41836736">
-              <folding />
+            <state line="45" column="25" selection-start="1319" selection-end="1319" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="IOException.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="jar://C:/Program Files/Java/jdk1.7.0_21/src.zip!/java/io/IOException.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="38" column="6" selection-start="528" selection-end="528" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Parser.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="Parser.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/co/uk/brookes/Parser.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="599" column="42" selection-start="10927" selection-end="10927" vertical-scroll-proportion="-10.4">
-              <folding />
+            <state line="130" column="44" selection-start="3153" selection-end="3153" vertical-scroll-proportion="0.46487868">
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#7487#7495#0" expanded="true" />
+                <element signature="e#8838#8846#0" expanded="true" />
+                <element signature="e#13809#13817#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -335,7 +357,7 @@
       <file leaf-file-name="Scanner.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/co/uk/brookes/Scanner.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="383" column="48" selection-start="11440" selection-end="11440" vertical-scroll-proportion="0.0">
+            <state line="712" column="0" selection-start="22939" selection-end="22939" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -344,7 +366,7 @@
       <file leaf-file-name="Parser.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/CocoR/Parser.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="423" column="14" selection-start="6032" selection-end="6091" vertical-scroll-proportion="-17.88">
+            <state line="288" column="21" selection-start="4483" selection-end="4492" vertical-scroll-proportion="-10.44">
               <folding />
             </state>
           </provider>
@@ -353,34 +375,45 @@
       <file leaf-file-name="Scanner.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/CocoR/Scanner.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="361" column="231" selection-start="11617" selection-end="11617" vertical-scroll-proportion="0.0">
+            <state line="389" column="14" selection-start="12263" selection-end="12263" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="TestScanner.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://Z:/Courses/OBU/P00488 Language Specification and Compiler Construction/Compiler04/Deliverable/Micro Java Compiler/src/MJ/TestScanner.java">
+      <file leaf-file-name="Obj.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/co/uk/brookes/co/uk/brookes/symboltable/Obj.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="53" column="42" selection-start="1005" selection-end="1005" vertical-scroll-proportion="0.0">
+            <state line="20" column="42" selection-start="570" selection-end="570" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Parser.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://Z:/Courses/OBU/P00488 Language Specification and Compiler Construction/Compiler04/Compiler/src/MJ/Parser.java">
+      <file leaf-file-name="Struct.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/co/uk/brookes/co/uk/brookes/symboltable/Struct.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="22" column="210" selection-start="410" selection-end="410" vertical-scroll-proportion="0.0">
+            <state line="12" column="28" selection-start="313" selection-end="313" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Scanner.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://Z:/Courses/OBU/P00488 Language Specification and Compiler Construction/Compiler04/Deliverable/Micro Java Compiler/src/MJ/Scanner.java">
+      <file leaf-file-name="STab.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/co/uk/brookes/co/uk/brookes/symboltable/STab.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="213" column="57" selection-start="5908" selection-end="5908" vertical-scroll-proportion="0.0">
+            <state line="101" column="28" selection-start="3371" selection-end="3371" vertical-scroll-proportion="-16.28">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Scope.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/co/uk/brookes/co/uk/brookes/symboltable/Scope.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="8" column="21" selection-start="185" selection-end="185" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -400,17 +433,22 @@
         <option value="$PROJECT_DIR$/src/co/uk/brookes/Scanner.frame" />
         <option value="$PROJECT_DIR$/src/co/uk/brookes/Parser.frame" />
         <option value="$PROJECT_DIR$/CocoR/Scanner.java" />
-        <option value="$PROJECT_DIR$/src/co/uk/brookes/Parser.java" />
         <option value="$PROJECT_DIR$/src/co/uk/brookes/Scanner.java" />
+        <option value="$PROJECT_DIR$/src/co/uk/brookes/co/uk/brookes/symboltable/Scope.java" />
+        <option value="$PROJECT_DIR$/src/co/uk/brookes/co/uk/brookes/symboltable/Table.java" />
+        <option value="$PROJECT_DIR$/src/co/uk/brookes/co/uk/brookes/symboltable/Obj.java" />
+        <option value="$PROJECT_DIR$/src/co/uk/brookes/co/uk/brookes/symboltable/Struct.java" />
+        <option value="$PROJECT_DIR$/src/co/uk/brookes/co/uk/brookes/symboltable/STab.java" />
         <option value="$PROJECT_DIR$/src/co/uk/brookes/main.java" />
+        <option value="$PROJECT_DIR$/src/co/uk/brookes/Parser.java" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="-9" />
-    <option name="y" value="39" />
+    <option name="y" value="89" />
     <option name="width" value="1938" />
-    <option name="height" value="1050" />
+    <option name="height" value="1000" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -418,6 +456,9 @@
         <expanded-state>
           <State>
             <id />
+          </State>
+          <State>
+            <id>Android Lint</id>
           </State>
           <State>
             <id>Code maturity issues</id>
@@ -441,7 +482,16 @@
             <id>Google Web Toolkit issues</id>
           </State>
           <State>
+            <id>Groovy</id>
+          </State>
+          <State>
             <id>Inheritance issues</id>
+          </State>
+          <State>
+            <id>IntelliJ IDEA Platform Inspections</id>
+          </State>
+          <State>
+            <id>J2ME issues</id>
           </State>
           <State>
             <id>JavaScript</id>
@@ -450,7 +500,19 @@
             <id>Javadoc issues</id>
           </State>
           <State>
+            <id>Performance issues</id>
+          </State>
+          <State>
+            <id>Properties Files</id>
+          </State>
+          <State>
             <id>Spelling</id>
+          </State>
+          <State>
+            <id>Threading issues</id>
+          </State>
+          <State>
+            <id>Threading issuesGroovy</id>
           </State>
           <State>
             <id>UI Form Problems</id>
@@ -495,8 +557,8 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
       <pane id="Scope" />
+      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -551,8 +613,8 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="Parser.java" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.ClassesTreeStructureProvider$PsiClassOwnerTreeNode" />
+              <option name="myItemId" value="symboltable" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -566,18 +628,18 @@
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="recentsLimit" value="5" />
     <property name="MemberChooser.sorted" value="false" />
-    <property name="options.lastSelected" value="preferences.sourceCode.Java" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="options.lastSelected" value="preferences.keymap" />
+    <property name="last_opened_file_path" value="Z:/Courses/OBU/P00488 Language Specification and Compiler Construction/Compiler04/Deliverable/Micro Java Compiler" />
     <property name="project.structure.side.proportion" value="0.0" />
     <property name="MemberChooser.copyJavadoc" value="false" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="MemberChooser.showClasses" value="true" />
     <property name="FullScreen" value="false" />
+    <property name="MemberChooser.showClasses" value="true" />
     <property name="GoToClass.includeLibraries" value="false" />
-    <property name="options.splitter.details.proportions" value="0.2" />
-    <property name="options.searchVisible" value="true" />
     <property name="dynamic.classpath" value="false" />
+    <property name="options.searchVisible" value="true" />
+    <property name="options.splitter.details.proportions" value="0.2" />
   </component>
   <component name="RunManager" selected="Application.main">
     <configuration default="false" name="main" type="Application" factoryName="Application" temporary="true">
@@ -619,6 +681,19 @@
       <option name="PORT" value="5005" />
       <method />
     </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <method />
+    </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <module name="" />
@@ -645,19 +720,6 @@
       <envs />
       <properties />
       <listeners />
-      <method />
-    </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
       <method />
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
@@ -756,32 +818,32 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-9" y="39" width="1938" height="1050" extended-state="6" />
-    <editor active="false" />
+    <frame x="-9" y="89" width="1938" height="1000" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32853717" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3382353" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3381295" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32918552" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32918552" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32853717" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="CDI" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32918552" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3091518" sideWeight="0.6882217" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.30542988" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.18249734" sideWeight="0.6199041" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.38009593" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32918552" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2497332" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
@@ -851,31 +913,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://Z:/Courses/OBU/P00488 Language Specification and Compiler Construction/Parser.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="39" column="34" selection-start="709" selection-end="709" vertical-scroll-proportion="0.06876457" />
-      </provider>
-    </entry>
-    <entry file="file://Z:/Courses/OBU/P00488 Language Specification and Compiler Construction/Scanner.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="65" column="52" selection-start="1590" selection-end="1590" vertical-scroll-proportion="0.020118343" />
-      </provider>
-    </entry>
-    <entry file="file://Z:/Courses/OBU/P00488 Language Specification and Compiler Construction/Compiler04/Deliverable/Micro Java Compiler/src/MJ/Token.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.7.0_21/src.zip!/java/util/Map.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="227" column="6" selection-start="10526" selection-end="10526" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://Z:/Courses/OBU/P00488 Language Specification and Compiler Construction/Compiler04/Deliverable/Micro Java Compiler/src/MJ/Parser.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="230" column="44" selection-start="5549" selection-end="5549" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
     <entry file="file://C:/JADE-all-4.3.0/JADE-examples-4.3.0/jade/src/examples/PingAgent/PingAgent.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="73" column="40" selection-start="2787" selection-end="2787" vertical-scroll-proportion="0.0" />
@@ -893,13 +930,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://Z:/Courses/OBU/P00488 Language Specification and Compiler Construction/Compiler04/Compiler/src/MJ/Parser.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="22" column="210" selection-start="410" selection-end="410" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://Z:/Courses/OBU/P00488 Language Specification and Compiler Construction/Compiler04/Deliverable/Micro Java Compiler/src/MJ/Scanner.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="213" column="57" selection-start="5908" selection-end="5908" vertical-scroll-proportion="0.0">
@@ -909,43 +939,83 @@
     </entry>
     <entry file="jar://C:/Program Files/Java/jdk1.7.0_21/src.zip!/java/io/IOException.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="38" column="6" selection-start="528" selection-end="528" vertical-scroll-proportion="0.0">
+        <state line="38" column="6" selection-start="528" selection-end="528" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://Z:/Courses/OBU/P00488 Language Specification and Compiler Construction/Compiler04/Compiler/src/MJ/Parser.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="97" column="7" selection-start="2578" selection-end="2578" vertical-scroll-proportion="0.079254076" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/co/uk/brookes/co/uk/brookes/symboltable/Scope.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="8" column="21" selection-start="185" selection-end="185" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CocoR/Scanner.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="361" column="231" selection-start="11617" selection-end="11617" vertical-scroll-proportion="0.0">
+        <state line="389" column="14" selection-start="12263" selection-end="12263" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/co/uk/brookes/co/uk/brookes/symboltable/Obj.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="20" column="42" selection-start="570" selection-end="570" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/co/uk/brookes/co/uk/brookes/symboltable/STab.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="101" column="28" selection-start="3371" selection-end="3371" vertical-scroll-proportion="-16.28">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/co/uk/brookes/main.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="45" column="25" selection-start="1319" selection-end="1319" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/co/uk/brookes/Scanner.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="712" column="0" selection-start="22939" selection-end="22939" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CocoR/Parser.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="423" column="14" selection-start="6032" selection-end="6091" vertical-scroll-proportion="-17.88">
+        <state line="288" column="21" selection-start="4483" selection-end="4492" vertical-scroll-proportion="-10.44">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/co/uk/brookes/co/uk/brookes/symboltable/Struct.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="12" column="28" selection-start="313" selection-end="313" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/co/uk/brookes/Parser.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="599" column="42" selection-start="10927" selection-end="10927" vertical-scroll-proportion="-10.4">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/co/uk/brookes/Scanner.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="383" column="48" selection-start="11440" selection-end="11440" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/co/uk/brookes/main.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="167" selection-start="350" selection-end="350" vertical-scroll-proportion="0.41836736">
-          <folding />
+        <state line="130" column="44" selection-start="3153" selection-end="3153" vertical-scroll-proportion="0.46487868">
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#7487#7495#0" expanded="true" />
+            <element signature="e#8838#8846#0" expanded="true" />
+            <element signature="e#13809#13817#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
