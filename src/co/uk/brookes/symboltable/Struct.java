@@ -1,4 +1,4 @@
-package co.uk.brookes.co.uk.brookes.symboltable;
+package co.uk.brookes.symboltable;
 
 /**
  * Author: Fantou Thomas
@@ -20,11 +20,11 @@ public class Struct {
     public static final String[] values = {
             "none", "integer", "real", "bool", "char", "string", "caste", "list", "enum", "record"};
 
-    public int     kind;		    // None, Int, Char, ...
+    public int     kind;		    // integer, char, declared type...
     public Struct  listType;        // List: list type
     public int     nFields;         // Caste/List/Record/Enum: number of fields
     public Obj     fields;          // Caste/List/Record/Enum: fields
-
+    public String  name;            // for declared type/caste
 
     public Struct(int kind) {
         this.kind = kind;

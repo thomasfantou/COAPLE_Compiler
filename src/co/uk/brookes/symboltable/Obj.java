@@ -1,4 +1,4 @@
-package co.uk.brookes.co.uk.brookes.symboltable;
+package co.uk.brookes.symboltable;
 
 /**
  * Author: Fantou Thomas

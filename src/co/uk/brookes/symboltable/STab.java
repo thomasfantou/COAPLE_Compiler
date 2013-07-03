@@ -1,4 +1,4 @@
-package co.uk.brookes.co.uk.brookes.symboltable;
+package co.uk.brookes.symboltable;
 
 import co.uk.brookes.Parser;
 import co.uk.brookes.main;
@@ -64,11 +64,16 @@ public class STab {
             last = p; p = p.next;
         }
         if (last == null) curScope.locals = obj; else last.next = obj;
-        if(main.LOGGING_SYMBAB_ENABLED){
+        if(main.LOGGING_SYMTAB_ENABLED){
             for(int i = 0; i < curLevel + 1; i++) System.out.print("--");
             System.out.println(Obj.values[kind] + "(" + Struct.values[type.kind] +") \"" + name + "\"");
         }
         return obj;
+    }
+
+    public static void setFields(Obj obj) {
+        obj.type.fields = curScope.locals;
+        obj.type.nFields = curScope.nVars;
     }
 
     // Retrieve the object with the given name from the top scope

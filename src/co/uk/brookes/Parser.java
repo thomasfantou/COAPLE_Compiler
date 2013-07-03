@@ -1,9 +1,13 @@
 
 package co.uk.brookes;
 
-import co.uk.brookes.co.uk.brookes.symboltable.Obj;
-import co.uk.brookes.co.uk.brookes.symboltable.STab;
-import co.uk.brookes.co.uk.brookes.symboltable.Struct;
+import co.uk.brookes.codegeneration.builder.Builder;
+import co.uk.brookes.codegeneration.builder.Instruction;
+import co.uk.brookes.symboltable.Obj;
+import co.uk.brookes.symboltable.STab;
+import co.uk.brookes.symboltable.Struct;
+import co.uk.brookes.codegeneration.Code;
+import co.uk.brookes.codegeneration.Operand;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -206,29 +210,37 @@ public class Parser {
 
 
     //CasteDec =
-    //    "caste" ident [Inheritances] ";"
+    //    "caste" ident ["("[ParameterList]")"] [Inheritances] ";"
     //    [EnvironmentDecs]
-    //    [StateDecs]
+    //    "state" [StateDecs]
     //    [ActionDecs]
     //    "init" [Statement]
     //"body"
-    //    [Decs]
-    //    [ActionDecs]
+    //    [LocalDecs]
     //    [Statement]
     //"end" ident.
 	void CasteDec() {
 		Expect(caste_);
 		Expect(ident);
-        Object obj = STab.insert(Obj.type_, t.val, new Struct(Struct.caste_));
+        Obj o = STab.insert(Obj.type_, t.val, new Struct(Struct.caste_));
+        Builder.add(o.name);
+        STab.openScope();
+        if(la.kind == lpar) {
+            Get();
+            if (la.kind == ident) {
+                ParameterList();
+            }
+            Expect(rpar);
+        }
 		if (la.kind == inherits_) {
 			Inheritances();
 		}
 		Expect(semicolon);
-        STab.openScope();
         if (la.kind == observes_) {
 			EnvironmentDecs();
 		}
 		if (la.kind == state_) {
+            Get();
 			StateDecs();
 		}
 		if (la.kind == action_) {
@@ -240,16 +252,14 @@ public class Parser {
         }
 		Expect(body_);
 		if (la.kind == var_) {
-			Decs();
-		}
-		if (la.kind == action_) {
-			ActionDecs();
+            LocalDecs();
 		}
         if (StartOf(3)) {
             Statement();
         }
 		Expect(end_);
 		Expect(ident);
+        Builder.add(o);
         STab.closeScope();
 	}
 
@@ -283,8 +293,17 @@ public class Parser {
 		} else if (la.kind == record_ || la.kind == list_ || la.kind == enumerate_) {
             type = StructureType();
 		} else if (la.kind == ident) {
-			ID();
-            //TODO get type of ID
+			String id = ID();
+            Obj obj = STab.find(id);
+            if(!obj.equals(STab.noObj)){
+                if(obj.kind == Obj.type_) {
+                    type = obj.type;
+                    type.name = id;
+                }
+                else
+                    SemErr("invalid type");
+            }
+
 		} else SynErr(72);
         return type;
 	}
@@ -353,6 +372,7 @@ public class Parser {
             Expect(semicolon);
         }
 		Expect(end_);
+        STab.setFields(obj);
         STab.closeScope();
 	}
 
@@ -382,6 +402,7 @@ public class Parser {
         for(int i = 0; i < ids.size(); i++)
             STab.insert(Obj.typeField_, ids.get(i), new Struct(Struct.integer_));
 		Expect(end_);
+        STab.setFields(obj);
         STab.closeScope();
 	}
 
@@ -421,10 +442,14 @@ public class Parser {
 	}
 
     //StateDecs =
-    //    "state" Decs.
+    //  StateDec ";" {StateDec ";"}.
 	void StateDecs() {
-		Expect(state_);
-		Decs();
+        StateDec();
+        Expect(semicolon);
+        while (la.kind == var_) {
+            StateDec();
+            Expect(semicolon);
+        }
 	}
 
     //ActionDecs =
@@ -520,32 +545,56 @@ public class Parser {
         STab.closeScope();
     }
 
-    //Decs =
-    //    Dec ";" {Dec ";"}.
-	void Decs() {
-		Dec();
-		Expect(semicolon);
-		while (la.kind == var_) {
-			Dec();
-			Expect(semicolon);
-		}
+    //StateDec =
+    //    "var" IDList ":" TypeExp [":=" ident].
+	void StateDec() {
+        Expect(var_);
+        ArrayList<String> ids = IDList();
+        Expect(colon);
+        Struct type = TypeExp();
+        for(String id : ids){
+            Obj obj = STab.insert(Obj.var_, id, type);
+            Builder.add(obj);
+        }
+        if (la.kind == assign) {
+            Get();
+            Expect(ident);
+        }
 	}
 
     //EnvDec =
     //    ident
-    //    | "all" "in" ID
-    //    | "var" ident "in" ID [":=" AgentID]
-    //    | "set" ident "in" ID [":=" AgentSetEnum].
-	void EnvDec() { //TODO when ID struct type is implemented
+    //    | "all" ident "in" ID
+    //    | "var" IDList "in" ID [":=" AgentID]
+    //    | "set" IDList "in" ID [":=" AgentSetEnum].
+	void EnvDec() {
 		if (la.kind == ident) {
 			Get();
 		} else if (la.kind == all_) {
 			Get();
+            Expect(ident);
+            String ident = t.val;
 			Expect(in_);
-			ID();
+			String id = ID();
+            Builder.add(id);    //add the value to the constants object file
+            Obj obj = STab.find(id);
+            if(!obj.equals(STab.noObj)){
+                if(obj.kind == Obj.type_ || obj.type.kind == Struct.caste_) {
+                    obj.type.name = id;
+                    STab.insert(Obj.var_, ident, obj.type);
+                }
+                else
+                    SemErr("invalid caste");
+            }
+            else {  //TODO: if caste undefined (but what if it is defined later or in another file) (proposition: stack it and check the stack when the first parse is done)
+                Struct struct = new Struct(Struct.caste_);
+                struct.name = id;
+                Obj obj2 = STab.insert(Obj.var_, ident, struct);
+                Builder.add(obj2);
+            }
 		} else if (la.kind == var_) {
 			Get();
-            Expect(ident);
+            IDList();
 			Expect(in_);
 			ID();
 			if (la.kind == assign) {
@@ -554,7 +603,7 @@ public class Parser {
 			}
 		} else if (la.kind == set_) {
 			Get();
-            Expect(ident);
+            IDList();
 			Expect(in_);
 			ID();
 			if (la.kind == assign) {
@@ -566,7 +615,7 @@ public class Parser {
 
     //AgentID	=
     //  ident "in" ID.
-	void AgentID() { //TODO struct = agent ?
+	void AgentID() { //TODO ex : var mon in Monitor := x in Monitor;    why repeat "in Monitor" with the x ?
 		Expect(ident);
 		Expect(25);
 		ID();
@@ -586,9 +635,20 @@ public class Parser {
 		Expect(rbrace);
 	}
 
-    //Dec =
+    //LocalDecs =
+    //  LocalDec ";" {LocalDec ";"}.
+    void LocalDecs() {
+        LocalDec();
+        Expect(semicolon);
+        while (la.kind == var_) {
+            LocalDec();
+            Expect(semicolon);
+        }
+    }
+
+    //LocalDec =
     //  "var" IDList ":" TypeExp [":=" ident].
-	void Dec() {
+	void LocalDec() {
 		Expect(var_);
 		ArrayList<String> ids = IDList();
 		Expect(colon);
@@ -609,19 +669,25 @@ public class Parser {
 		Expect(action_);
         ArrayList<String> ids = IDList();
         Obj[] objs = new Obj[ids.size()];
+        int nParam = 0;
         for(int i = 0; i < ids.size(); i++) //because IDList
             objs[i] = STab.insert(Obj.action_, ids.get(i), new Struct(Struct.none_));
 		Expect(lpar);
         STab.openScope();
 		if (la.kind == ident) {
-			ParameterList();
+			nParam = ParameterList();
 		}
+        for(int i = 0; i < objs.length; i++)
+            objs[i].nPars = nParam;
+
 		Expect(rpar);
 		if (StartOf(3)) {
 			Statement();
 		}
-        for(int i = 0; i < objs.length; i++)
+        for(int i = 0; i < objs.length; i++) {
             objs[i].locals = STab.curScope.locals;
+            Builder.add(objs[i]);
+        }
 		if (la.kind == affect_) {
 			Impact();
 		}
@@ -1033,6 +1099,9 @@ public class Parser {
 	void Factor() {
 		if (la.kind == number) {
 			Get();
+            int number = Integer.parseInt(t.val);
+            Operand op = new Operand(number);
+            Code.load(op);
 		} else if (la.kind == ident || la.kind == not_) {
             if(la.kind == not_) Get();
 			Designator();
