@@ -3,6 +3,9 @@ package co.uk.brookes.codegeneration.builder;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -32,14 +35,13 @@ public class XMLManager {
 
     final String
         elem_def = "def",
-        elem_comment = "comment",
-        elem_constant = "constant_section",
-            param_index = "index",
+        elem_constant = "constantpool",
+            param_index = "off",    //how it is read by the CAVM (see LEE/Loader.cpp)
             elem_label = "utf8",
             elem_state = "state",
             elem_action = "action",
                 elem_parameters = "params",
-                param_count = "count",
+                param_count = "cnt",
                 elem_param = "p",
             elem_evironment = "env",
                 elem_scope = "scope",
@@ -47,6 +49,7 @@ public class XMLManager {
                 elem_type = "type",
                 elem_url = "url",
             elem_caste = "caste",
+                param_castecount = "count",
                 elem_ceurl = "ceurl",
                 elem_cons = "cons",
                 elem_c = "c",
@@ -57,9 +60,11 @@ public class XMLManager {
                 elem_envs = "envs",
                 elem_e = "e",
             elem_name = "name",
-            elem_typecode = "typecode",
+            elem_typecode = "tc",
         elem_init = "init",
-        elem_rooting = "rooting";
+        elem_rooting = "rooting",
+
+        end_line_instruction = ";";
 
     //create default file structure
     public XMLManager() {
@@ -74,10 +79,6 @@ public class XMLManager {
         doc = docBuilder.newDocument();
         rootElement = doc.createElement(elem_def);
         doc.appendChild(rootElement);
-
-        // comment element
-        Element comment = doc.createElement(elem_comment);
-        rootElement.appendChild(comment);
 
         // constant element
         constantElement = doc.createElement(elem_constant);
@@ -95,6 +96,7 @@ public class XMLManager {
     public void generateFile(ArrayList<Instruction> constants, ArrayList<Instruction> init, ArrayList<Instruction> rooting){
         StreamResult res = new StreamResult(System.out);
 
+        Collections.sort(constants, new CustomComparator());
         for(Instruction c : constants) {
             switch(c.code) {
                 case Instruction.label_: addLabel(c); break;
@@ -106,12 +108,22 @@ public class XMLManager {
         }
 
 
+        initElement.appendChild(doc.createTextNode("\n")); //for the format, easy readable
+        for(Instruction i : init) {
+            addInit(i);
+        }
+
+        rootingElement.appendChild(doc.createTextNode("\n")); //for the format, easy readable
+        for(Instruction r : rooting) {
+            addRooting(r);
+        }
+
         try {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");  //remove xml header
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");                //add line jump
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");    //ident line of 2 spaces
             DOMSource source = new DOMSource(doc);
 
             transformer.transform(source, res);
@@ -241,7 +253,7 @@ public class XMLManager {
         Element consElement = doc.createElement(elem_cons);
         casteElement.appendChild(consElement);
 
-        Attr attrCons = doc.createAttribute(param_count);
+        Attr attrCons = doc.createAttribute(param_castecount);
         attrCons.setValue(String.valueOf(ins.cons.length));
         consElement.setAttributeNode(attrCons);
 
@@ -255,7 +267,7 @@ public class XMLManager {
         Element statesElement = doc.createElement(elem_states);
         casteElement.appendChild(statesElement);
 
-        Attr attrStates = doc.createAttribute(param_count);
+        Attr attrStates = doc.createAttribute(param_castecount);
         attrStates.setValue(String.valueOf(ins.states.length));
         statesElement.setAttributeNode(attrStates);
 
@@ -269,7 +281,7 @@ public class XMLManager {
         Element actionsElement = doc.createElement(elem_actions);
         casteElement.appendChild(actionsElement);
 
-        Attr attrActions = doc.createAttribute(param_count);
+        Attr attrActions = doc.createAttribute(param_castecount);
         attrActions.setValue(String.valueOf(ins.actions.length));
         actionsElement.setAttributeNode(attrActions);
 
@@ -283,7 +295,7 @@ public class XMLManager {
         Element envsElement = doc.createElement(elem_envs);
         casteElement.appendChild(envsElement);
 
-        Attr attrEnvs = doc.createAttribute(param_count);
+        Attr attrEnvs = doc.createAttribute(param_castecount);
         attrEnvs.setValue(String.valueOf(ins.envs.length));
         envsElement.setAttributeNode(attrEnvs);
 
@@ -295,4 +307,23 @@ public class XMLManager {
 
     }
 
+    void addInit(Instruction ins) {
+        initElement.appendChild(doc.createTextNode("\t")); //for the format, easy readable
+        initElement.appendChild(doc.createTextNode(ins.insVal + end_line_instruction));
+        initElement.appendChild(doc.createTextNode("\n")); //for the format, easy readable
+    }
+
+    void addRooting(Instruction ins) {
+        rootingElement.appendChild(doc.createTextNode("\t")); //for the format, easy readable
+        rootingElement.appendChild(doc.createTextNode(ins.insVal + end_line_instruction));
+        rootingElement.appendChild(doc.createTextNode("\n")); //for the format, easy readable
+    }
+
+    class CustomComparator implements Comparator<Instruction> {
+        @Override
+        public int compare(Instruction o1, Instruction o2) {
+            return (o1.code < o2.code) ? -1 : 1;
+        }
+    }
 }
+

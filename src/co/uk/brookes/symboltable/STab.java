@@ -51,9 +51,20 @@ public class STab {
     {
         //--- create object node
         Obj obj = new Obj(kind, name, type);
-        if (kind == Obj.var_)
-        {
-            obj.adr = curScope.nVars; curScope.nVars++;
+        if (kind == Obj.var_) {
+            obj.adr = curScope.nVars++;
+            obj.level = curLevel;
+        }
+        if(kind == Obj.state_) {    //states' adr will correspond to their index in the VM
+            obj.adr = curScope.nStates++;
+            obj.level = curLevel;
+        }
+        if(kind == Obj.action_) {    //actions' adr will correspond to their index in the VM
+            obj.adr = curScope.nActions++;
+            obj.level = curLevel;
+        }
+        if(kind == Obj.environment_) {    //envs' adr will correspond to their index in the VM
+            obj.adr = curScope.nEnvs++;
             obj.level = curLevel;
         }
         //--- append object node

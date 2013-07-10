@@ -1,5 +1,6 @@
 package co.uk.brookes.codegeneration.builder;
 
+import co.uk.brookes.codegeneration.Operand;
 import co.uk.brookes.symboltable.Obj;
 import co.uk.brookes.symboltable.Struct;
 
@@ -15,10 +16,24 @@ public class Builder {
     static ArrayList<Instruction> constants;
     static ArrayList<Instruction> init;
     static ArrayList<Instruction> rooting;
-    static boolean isInitOver = false;
+
     static XMLManager xml;
 
+    public static int step;
+    public final static int //steps used for the builder to set the instructions to their right place (e.g. var from envdec or state are threated differently)
+        envdec_ = 0,
+        statedec_ = 1,
+        actiondec_ = 2,
+        init_ = 3,
+        rooting_ = 4,
+        castereview_ = 5;
+
     static int idx;
+
+    static int //byte code pc/constant address (same than the one generated in the CAVM)
+        curr_init = 0,
+        curr_rooting = 0,
+        curr_cons = 0;
 
     public static void init() {
         constants = new ArrayList<Instruction>();
@@ -28,36 +43,54 @@ public class Builder {
         xml = new XMLManager();
         idx = 0;
 
+        step = envdec_;
+
         //default nodes
         addLabel("localhost");
         addLabel("all");
     }
 
-    public static void add(Obj o) {
-        switch(o.kind) {
-            case Obj.var_:
-                switch(o.type.kind) {
-                    case Struct.caste_: //add label instruction
-                        addLabel(o.name);
-                        addEnv(o);
-                        break;
-                    default: //TODO list/record/enum ?
-                        addLabel(o.name);
-                        addState(o);
-                        break;
+
+    //----------------- XML : Constant_section --------------
+
+    public static void add(Obj o) {     //for generating the XML, we use Obj, to add them in the Constant_section
+        switch(step) {
+            case envdec_:
+                if(o.kind == Obj.var_) {
+                    addLabel(o.name);
+                    addEnv(o);
                 }
                 break;
-            case Obj.action_:
-                addLabel(o.name);
-                addAction(o);
-            case Obj.type_:
-                switch(o.type.kind) {
-                    case Struct.caste_: //add final caste instruction
-                        addCaste(o);
-                        break;
+            case statedec_: //TODO list/record/enum ?
+                if(o.kind == Obj.state_) {
+                    addLabel(o.name);
+                    addState(o);
+                }
+                break;
+            case actiondec_:
+                if(o.kind == Obj.action_) {
+                    addLabel(o.name);
+                    addAction(o);
+                }
+                break;
+            case castereview_:
+                if(o.type.kind == Struct.caste_) { //add final caste instruction
+                    addCaste(o);
                 }
                 break;
         }
+    }
+
+    //add const (e.g. string val)
+    public static void addCons(String con) {
+        addLabel(con);
+        Instruction ins = new Instruction();
+        ins.kind = Instruction.constant_;
+        ins.code = Instruction.cons_;
+        ins.name = getIndex(con);
+        ins.val = con;
+        ins.address = curr_cons++;
+        constants.add(ins);
     }
 
     static void addLabel(String val) {
@@ -76,6 +109,7 @@ public class Builder {
         ins.code = Instruction.state_;
         ins.name = getIndex(o.name);
         ins.typeCode = o.type.kind;
+        ins.address = o.adr;
         constants.add(ins);
     }
 
@@ -87,6 +121,7 @@ public class Builder {
         ins.name = getIndex(o.name);
         ins.nParam = o.nPars;
         ins.params = o.locals;
+        ins.address = o.adr;
         constants.add(ins);
     }
 
@@ -97,6 +132,7 @@ public class Builder {
         ins.code = Instruction.env_;
         ins.name = getIndex(o.name);
         ins.casteName = getIndex(o.type.name);
+        ins.address = o.adr;
 
         //TODO: how to fill these fields ?
         ins.url = getIndex("localhost");
@@ -106,6 +142,7 @@ public class Builder {
 
         constants.add(ins);
     }
+
 
     static void addCaste(Obj o) {
         Instruction ins = new Instruction();
@@ -118,20 +155,22 @@ public class Builder {
         String sStates = "";
         String sActions = "";
         String sEnvs = "";
+        String sCons = "";
         String sepChar = ";"; //used for the split
         for(Instruction i : constants)
             switch(i.code) {
                 case Instruction.state_: sStates += i.index + sepChar; break;
                 case Instruction.action_: sActions += i.index + sepChar; break;
                 case Instruction.env_ : sEnvs += i.index + sepChar; break;
+                case Instruction.cons_ : sCons += i.name + sepChar; break;
             }
         ins.states = sStates.split(sepChar);
         ins.actions = sActions.split(sepChar);
         ins.envs = sEnvs.split(sepChar);
+        ins.cons = sCons.split(sepChar);
 
         //TODO: how to fill these fields ?
         ins.url = getIndex("localhost");
-        ins.cons = new String[0];
 
         constants.add(ins);
     }
@@ -141,16 +180,13 @@ public class Builder {
         addLabel(str);
     }
 
-    // Write the code buffer to the output stream
-    public static void write() {
-        xml.generateFile(constants, init, rooting);
-    }
-
     static Instruction getInstruction(String name) {
+        String nameIdx = getIndex(name);
         Instruction instruction = null;
         for(Instruction ins : constants)
-            if(ins.name.equals(name))
-                instruction = ins;
+            if(ins.name != null)
+                if(ins.name.equals(nameIdx))
+                    instruction = ins;
         return instruction;
     }
 
@@ -162,6 +198,66 @@ public class Builder {
                     idx = ins.index;
 
         return String.valueOf(idx);
+    }
+
+    //----------------- instruction generation --------------
+
+    //use operand to chose the right set of instructions
+    public static void load(Operand op) {
+        switch(op.kind){
+            case Operand.con_: //if it is a constant
+                switch(op.type.kind) {
+                    case Struct.integer_: put(Instruction.push_ + Instruction.typeint_); break;
+                    case Struct.string_ : put(Instruction.push_ + Instruction.typestring_); break;
+                }
+                put(op.val);
+            break;
+            case Operand.state_:
+                put(Instruction.pushstate_);
+                put(String.valueOf(op.adr));
+            break;
+
+        }
+    }
+
+    //insert something that is not an operand (e.g string value)
+    public static void loadIns(String val) {
+        Instruction ins = getInstruction(val);
+        switch(ins.code) {
+            case Instruction.cons_:
+                put(Instruction.pushconstantpoolasstring_);
+                put(String.valueOf(ins.address)); //address of the constant
+                break;
+        }
+    }
+
+    public static void assign(Operand op) {
+        switch(op.kind){
+            case Operand.state_:
+                put(Instruction.setstate_);
+                put(String.valueOf(op.adr));
+                put(Instruction.upstate_);
+                put(String.valueOf(op.adr));
+                put(Instruction.sendmessage_);
+                break;
+        }
+    }
+
+    static public void put(String code) {
+        Instruction ins = new Instruction(code);
+        switch(step) {
+            case init_: ins.address = curr_init++; init.add(ins); break;
+            case rooting_: ins.address = curr_rooting++; rooting.add(ins); break;
+        }
+    }
+
+
+    //-------------------------------
+
+
+    // Write the code buffer to the output stream
+    public static void write() {
+        xml.generateFile(constants, init, rooting);
     }
 
 }

@@ -237,20 +237,25 @@ public class Parser {
 		}
 		Expect(semicolon);
         if (la.kind == observes_) {
+            Builder.step = Builder.envdec_;
 			EnvironmentDecs();
 		}
 		if (la.kind == state_) {
+            Builder.step = Builder.statedec_;
             Get();
 			StateDecs();
 		}
 		if (la.kind == action_) {
+            Builder.step = Builder.actiondec_;
 			ActionDecs();
 		}
 		Expect(init_);
+        Builder.step = Builder.init_;
         if (StartOf(3)) {
             Statement();
         }
 		Expect(body_);
+        Builder.step = Builder.rooting_;
 		if (la.kind == var_) {
             LocalDecs();
 		}
@@ -259,6 +264,7 @@ public class Parser {
         }
 		Expect(end_);
 		Expect(ident);
+        Builder.step = Builder.castereview_;
         Builder.add(o);
         STab.closeScope();
 	}
@@ -477,10 +483,11 @@ public class Parser {
 	void Statement() {
 		switch (la.kind) {
 		case ident: {
-			Designator();
+			Operand op = Designator();
 			if (la.kind == assign) {
 				Get();
 				Exp();
+                Builder.assign(op);
 			} else if (la.kind == lpar) {
 				Get();
 				if (la.kind == ident) {
@@ -553,7 +560,7 @@ public class Parser {
         Expect(colon);
         Struct type = TypeExp();
         for(String id : ids){
-            Obj obj = STab.insert(Obj.var_, id, type);
+            Obj obj = STab.insert(Obj.state_, id, type);
             Builder.add(obj);
         }
         if (la.kind == assign) {
@@ -577,11 +584,12 @@ public class Parser {
 			Expect(in_);
 			String id = ID();
             Builder.add(id);    //add the value to the constants object file
-            Obj obj = STab.find(id);
-            if(!obj.equals(STab.noObj)){
-                if(obj.kind == Obj.type_ || obj.type.kind == Struct.caste_) {
-                    obj.type.name = id;
-                    STab.insert(Obj.var_, ident, obj.type);
+            Obj objID = STab.find(id);
+            if(!objID.equals(STab.noObj)){ //if object defined
+                if(objID.kind == Obj.type_ && objID.type.kind == Struct.caste_) { //if it's a caste
+                    Obj objIdent = STab.insert(Obj.environment_, ident, objID.type);
+                    objIdent.type.name = id;
+                    Builder.add(objIdent);
                 }
                 else
                     SemErr("invalid caste");
@@ -589,8 +597,8 @@ public class Parser {
             else {  //TODO: if caste undefined (but what if it is defined later or in another file) (proposition: stack it and check the stack when the first parse is done)
                 Struct struct = new Struct(Struct.caste_);
                 struct.name = id;
-                Obj obj2 = STab.insert(Obj.var_, ident, struct);
-                Builder.add(obj2);
+                Obj objIdent = STab.insert(Obj.environment_, ident, struct);
+                Builder.add(objIdent);
             }
 		} else if (la.kind == var_) {
 			Get();
@@ -738,8 +746,11 @@ public class Parser {
 
     //Designator =
     //  ident { "." ident } ["[" Exp "]"].<
-	void Designator() {
+	Operand Designator() {
+        Operand op;
 		Expect(ident);
+        Obj obj = STab.find(t.val);
+        op = new Operand(obj);
 		while (la.kind == period) {
 			Get();
 			Expect(ident);
@@ -749,16 +760,21 @@ public class Parser {
             Exp();
             Expect(rbrack);
         }
+        return op;
 	}
 
     //Exp =
     //    Term {Addop Term}.
-	void Exp() {
-		Term();
+	int Exp() {
+		int type = Term();
 		while (la.kind == plus || la.kind == minus || la.kind == concat) {
-			Addop();
-			Term();
+			String insVal = Addop();
+			Term(); //TODO: verify that this term is the same type as the first term
+            switch(type){
+                case Struct.integer_: Builder.put(insVal + Instruction.typeint_); break;
+            }
 		}
+        return type;
 	}
 
     //Conditions =
@@ -1042,37 +1058,51 @@ public class Parser {
 
     //Term =
     //  Factor {Mulop Factor}.
-	void Term() {
-		Factor();
+	int Term() {
+        int type = Struct.none_;
+		type = Factor();
 		while (la.kind == times || la.kind == slash || la.kind == rem) {
-			Mulop();
-			Factor();
+			String insVal = Mulop();
+			Factor(); //TODO: verify the type is the same than the first factor
+
+            switch(type) {
+                case Struct.integer_: Builder.put(insVal + Instruction.typeint_); break;
+            }
 		}
+        return type;
 	}
 
     //Addop =
     //  "+" | "-" | "++".
-	void Addop() {
+	String Addop() {
+        String insVal = "";
 		if (la.kind == plus) {
 			Get();
+            insVal = Instruction.add_;
 		} else if (la.kind == minus) {
 			Get();
+            insVal = Instruction.sub_;
 		}
         else if (la.kind == concat) {
             Get();
         } else SynErr(81);
+        return insVal;
 	}
 
     //Mulop =
     //  "*" | "/" | "%".
-	void Mulop() {
+	String Mulop() {
+        String insVal = "";
 		if (la.kind == times) {
 			Get();
+            insVal = Instruction.mul_;
 		} else if (la.kind == slash) {
 			Get();
+            insVal = Instruction.div_;
 		} else if (la.kind == rem) {
 			Get();
 		} else SynErr(82);
+        return insVal;
 	}
 
     //Relop =
@@ -1096,26 +1126,37 @@ public class Parser {
     //  | "(" Exp ")"
     //  | charVal
     //  | stringVal.
-	void Factor() {
+	int Factor() {
+        int type = Struct.none_;
 		if (la.kind == number) {
+            type = Struct.integer_;
 			Get();
             int number = Integer.parseInt(t.val);
             Operand op = new Operand(number);
-            Code.load(op);
+            Builder.load(op);
 		} else if (la.kind == ident || la.kind == not_) {
             if(la.kind == not_) Get();
-			Designator();
+			Operand op = Designator();
+            type = op.type.kind;
+            Builder.load(op);
 		} else if (la.kind == lpar) {
 			Get();
-			Exp();
+			type = Exp();
 			Expect(rpar);
 		} else if (la.kind == charVal) {
+            type = Struct.char_;
             Get();
+            Builder.addCons(t.val);
+            Builder.loadIns(t.val);
         }  else if (la.kind == stringVal) {
+            type = Struct.string_;
             Get();
+            Builder.addCons(t.val);
+            Builder.loadIns(t.val);
         }
-
         else SynErr(83);
+
+        return type;
 	}
 
 

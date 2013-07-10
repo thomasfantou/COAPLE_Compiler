@@ -11,7 +11,8 @@ public class Obj {
             type_ = 2,
             action_ = 3,
             typeField_ = 4,
-            environment_ = 5;
+            environment_ = 5,
+            state_  = 6;
 
     public static final String[] values = {
             "con", "var", "type", "action", "type_field", "environment"};
@@ -20,7 +21,7 @@ public class Obj {
     public String name;		// object name
     public Struct type;	 	// object type
     public int    val;      // Con: value
-    public int    adr;      // Var/Con/TypeField: address
+    public int    adr;      // address in the scope of the current kind
     public int    level;    // Var/Con/TypeField: declaration level
     public int    nPars;    // Action: number of parameters
     public Obj    locals;   // Action: parameters and local objects

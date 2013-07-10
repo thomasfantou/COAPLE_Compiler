@@ -22,17 +22,18 @@ public class Operand {
     public int    kind;	//
     public Struct type;	// item type
     public Obj obj;  // Action
-    public int    val;  // Con: value
+    public String    val;  // Con: value
     public int    adr;  // Local, State, Field, Action: address
 
     public Operand(Obj o) {
-        type = o.type; val = o.val; adr = o.adr; kind = stack_; // default
+        type = o.type; val = String.valueOf(o.val); adr = o.adr; kind = stack_; // default
         switch (o.kind) {
             case Obj.con_:
                 kind = con_; break;
+            case Obj.state_:
+                kind = state_; break;
             case Obj.var_:
-                if (o.level == 1) kind = state_; else kind = local_;
-                break;
+                kind = local_; break;
             case Obj.action_:
                 kind = action_; obj = o; break;
             case Obj.type_:
@@ -43,10 +44,14 @@ public class Operand {
     }
 
     public Operand(int val) {
-        kind = con_; this.val = val; type = STab.integerType;
+        kind = con_; this.val = String.valueOf(val); type = STab.integerType;
+    }
+
+    public Operand(String val) {
+        kind = con_; this.val = val; type = STab.stringType;
     }
 
     public Operand(int kind, int val, Struct type) {
-        this.kind = kind; this.val = val; this.type = type;
+        this.kind = kind; this.val = String.valueOf(val); this.type = type;
     }
 }
