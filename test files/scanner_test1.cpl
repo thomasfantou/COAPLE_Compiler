@@ -8,10 +8,15 @@ _meth0d
 0
 123
 00123
+3.2
 
 // character constants
 'x'
 'D'
+
+// string constants
+"hello World!"
+"zefçç'/zef::"
 
 // operators
 +  // plus
@@ -90,15 +95,5 @@ and
 or
 xor
 
-// illegal number
-9999999999
 
-// illegal character constants //To fix in V2
-'abc'
-'\rx'
-''
-'x
-
-// unknown token
-$
 

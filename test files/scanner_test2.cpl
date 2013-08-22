@@ -1,0 +1,13 @@
+// identifiers
+Just4Fun
+5Koko 		//var name cannot start with a digit, but, as in Java, errors will be handled in parser
+
+// unknown token
+$
+
+//numbers
+3.2d3		//read 2 tokens, error will be handled in parser
+
+//char const
+'c'
+'cc'

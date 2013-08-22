@@ -19,6 +19,7 @@ import com.sun.org.apache.xml.internal.serialize.OutputFormat;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import co.uk.brookes.main;
 
 /**
  * Author: Fantou Thomas
@@ -309,13 +310,19 @@ public class XMLManager {
 
     void addInit(Instruction ins) {
         initElement.appendChild(doc.createTextNode("\t")); //for the format, easy readable
-        initElement.appendChild(doc.createTextNode(ins.insVal + end_line_instruction));
+        if(main.LOGGING_CODEGENERATION_ENABLED)
+            initElement.appendChild(doc.createTextNode("[" + ins.address + "]" + ins.insVal + end_line_instruction));
+        else
+            initElement.appendChild(doc.createTextNode(ins.insVal + end_line_instruction));
         initElement.appendChild(doc.createTextNode("\n")); //for the format, easy readable
     }
 
     void addRooting(Instruction ins) {
         rootingElement.appendChild(doc.createTextNode("\t")); //for the format, easy readable
-        rootingElement.appendChild(doc.createTextNode(ins.insVal + end_line_instruction));
+        if(main.LOGGING_CODEGENERATION_ENABLED)
+            rootingElement.appendChild(doc.createTextNode("[" + ins.address + "]" + ins.insVal + end_line_instruction));
+        else
+            rootingElement.appendChild(doc.createTextNode(ins.insVal + end_line_instruction));
         rootingElement.appendChild(doc.createTextNode("\n")); //for the format, easy readable
     }
 

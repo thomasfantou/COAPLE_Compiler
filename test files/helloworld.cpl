@@ -1,0 +1,30 @@
+caste Peer (x: Monitor);
+observes 
+   var ob in Monitor;
+action sayHello();
+init 
+	ob:=x;
+body
+   if ob.cnt < 100
+   then sayHello();
+   end
+end Peer
+
+
+caste Monitor;
+observes all p in Peer;
+state
+	var cnt: integer;
+init 
+begin
+	cnt:=0;
+	for i:=1 to 10 do
+		create Peer(self);
+	end
+end
+body
+    when 
+		exist p in Peer: [sayHello()] 
+		-> cnt:= cnt+1
+end
+end Monitor

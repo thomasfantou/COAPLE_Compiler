@@ -106,27 +106,34 @@ public class Parser {
 	void CasteDec() {
 		Expect(21);
 		Expect(1);
-		if (la.kind == 24) {
+		if (la.kind == 22) {
+			Get();
+			if (la.kind == 1) {
+				ParameterList();
+			}
+			Expect(23);
+		}
+		if (la.kind == 27) {
 			Inheritances();
 		}
 		Expect(17);
-		if (la.kind == 25) {
+		if (la.kind == 28) {
 			EnvironmentDecs();
 		}
-		if (la.kind == 33) {
+		Expect(24);
+		if (la.kind == 31) {
 			StateDecs();
 		}
-		if (la.kind == 34) {
+		if (la.kind == 36) {
 			ActionDecs();
 		}
-		Expect(22);
-		Statement();
-		Expect(23);
-		if (la.kind == 28) {
-			Decs();
+		Expect(25);
+		if (StartOf(1)) {
+			Statement();
 		}
-		if (la.kind == 34) {
-			ActionDecs();
+		Expect(26);
+		if (la.kind == 31) {
+			LocalDecs();
 		}
 		Statement();
 		Expect(7);
@@ -144,7 +151,7 @@ public class Parser {
 	}
 
 	void TypeExp() {
-		if (StartOf(1)) {
+		if (StartOf(2)) {
 			PrimitiveType();
 		} else if (la.kind == 13 || la.kind == 18 || la.kind == 19) {
 			StructureType();
@@ -178,14 +185,16 @@ public class Parser {
 		Expect(13);
 		Expect(1);
 		Expect(14);
-		Expect(1);
-		while (la.kind == 15) {
+		while (la.kind == 1) {
 			Get();
-			Expect(1);
+			while (la.kind == 15) {
+				Get();
+				Expect(1);
+			}
+			Expect(16);
+			TypeExp();
+			Expect(17);
 		}
-		Expect(16);
-		TypeExp();
-		Expect(17);
 		Expect(7);
 	}
 
@@ -213,8 +222,16 @@ public class Parser {
 		}
 	}
 
+	void ParameterList() {
+		Parameter();
+		while (la.kind == 15) {
+			Get();
+			Parameter();
+		}
+	}
+
 	void Inheritances() {
-		Expect(24);
+		Expect(27);
 		Expect(1);
 		while (la.kind == 15) {
 			Get();
@@ -223,22 +240,26 @@ public class Parser {
 	}
 
 	void EnvironmentDecs() {
-		Expect(25);
-		while (StartOf(2)) {
+		Expect(28);
+		while (StartOf(3)) {
 			EnvDec();
 			Expect(17);
 		}
 	}
 
 	void StateDecs() {
-		Expect(33);
-		Decs();
+		StateDec();
+		Expect(17);
+		while (la.kind == 31) {
+			StateDec();
+			Expect(17);
+		}
 	}
 
 	void ActionDecs() {
 		ActionDec();
 		Expect(17);
-		while (la.kind == 34) {
+		while (la.kind == 36) {
 			ActionDec();
 			Expect(17);
 		}
@@ -248,15 +269,15 @@ public class Parser {
 		switch (la.kind) {
 		case 1: {
 			Designator();
-			if (la.kind == 29) {
+			if (la.kind == 32) {
 				Get();
 				Exp();
-			} else if (la.kind == 35) {
+			} else if (la.kind == 22) {
 				Get();
 				if (la.kind == 1) {
 					ParameterList();
 				}
-				Expect(36);
+				Expect(23);
 			} else SynErr(85);
 			Expect(17);
 			break;
@@ -303,11 +324,11 @@ public class Parser {
 		}
 	}
 
-	void Decs() {
-		Dec();
+	void LocalDecs() {
+		LocalDec();
 		Expect(17);
-		while (la.kind == 28) {
-			Dec();
+		while (la.kind == 31) {
+			LocalDec();
 			Expect(17);
 		}
 	}
@@ -315,26 +336,26 @@ public class Parser {
 	void EnvDec() {
 		if (la.kind == 1) {
 			Get();
-		} else if (la.kind == 26) {
+		} else if (la.kind == 29) {
 			Get();
 			Expect(1);
-			Expect(27);
+			Expect(30);
 			ID();
-		} else if (la.kind == 28) {
+		} else if (la.kind == 31) {
 			Get();
 			IDList();
-			Expect(27);
+			Expect(30);
 			ID();
-			if (la.kind == 29) {
+			if (la.kind == 32) {
 				Get();
 				AgentID();
 			}
-		} else if (la.kind == 30) {
+		} else if (la.kind == 33) {
 			Get();
 			IDList();
-			Expect(27);
+			Expect(30);
 			ID();
-			if (la.kind == 29) {
+			if (la.kind == 32) {
 				Get();
 				AgentSetEnum();
 			}
@@ -343,52 +364,55 @@ public class Parser {
 
 	void AgentID() {
 		Expect(1);
-		Expect(27);
+		Expect(30);
 		ID();
 	}
 
 	void AgentSetEnum() {
-		Expect(31);
+		Expect(34);
 		Expect(1);
 		while (la.kind == 15) {
 			Get();
 			Expect(1);
 		}
-		Expect(32);
+		Expect(35);
 	}
 
-	void Dec() {
-		Expect(28);
+	void StateDec() {
+		Expect(31);
 		IDList();
 		Expect(16);
 		TypeExp();
-		if (la.kind == 29) {
+		if (la.kind == 32) {
+			Get();
+			Expect(1);
+		}
+	}
+
+	void LocalDec() {
+		Expect(31);
+		IDList();
+		Expect(16);
+		TypeExp();
+		if (la.kind == 32) {
 			Get();
 			Expect(1);
 		}
 	}
 
 	void ActionDec() {
-		Expect(34);
+		Expect(36);
 		IDList();
-		Expect(35);
+		Expect(22);
 		if (la.kind == 1) {
 			ParameterList();
 		}
-		Expect(36);
-		if (StartOf(3)) {
+		Expect(23);
+		if (StartOf(1)) {
 			Statement();
 		}
 		if (la.kind == 37) {
 			Impact();
-		}
-	}
-
-	void ParameterList() {
-		Parameter();
-		while (la.kind == 15) {
-			Get();
-			Parameter();
 		}
 	}
 
@@ -408,7 +432,7 @@ public class Parser {
 			Expect(1);
 		}
 		Expect(16);
-		ID();
+		TypeExp();
 	}
 
 	void Designator() {
@@ -436,11 +460,11 @@ public class Parser {
 		if (la.kind == 39) {
 			Get();
 			ID();
-			Expect(35);
+			Expect(22);
 			if (la.kind == 1) {
 				Get();
 			}
-			Expect(36);
+			Expect(23);
 		} else if (la.kind == 40) {
 			Get();
 			ID();
@@ -459,11 +483,11 @@ public class Parser {
 			Expect(1);
 			Expect(14);
 			ID();
-			Expect(35);
+			Expect(22);
 			if (la.kind == 1) {
 				Get();
 			}
-			Expect(36);
+			Expect(23);
 			if (la.kind == 3) {
 				Get();
 			}
@@ -475,7 +499,7 @@ public class Parser {
 
 	void Block() {
 		Expect(38);
-		while (StartOf(3)) {
+		while (StartOf(1)) {
 			Statement();
 		}
 		Expect(7);
@@ -538,7 +562,7 @@ public class Parser {
 	void ForAllStatement() {
 		Expect(53);
 		Expect(1);
-		Expect(27);
+		Expect(30);
 		Exp();
 		Expect(47);
 		Statement();
@@ -547,7 +571,7 @@ public class Parser {
 
 	void WhenStatement() {
 		Expect(61);
-		while (la.kind == 1 || la.kind == 26 || la.kind == 62) {
+		while (la.kind == 1 || la.kind == 29 || la.kind == 62) {
 			Scenario();
 			Expect(59);
 			Statement();
@@ -558,7 +582,7 @@ public class Parser {
 	void ForLoop() {
 		Expect(50);
 		Expect(1);
-		Expect(29);
+		Expect(32);
 		Exp();
 		Expect(51);
 		Exp();
@@ -604,7 +628,7 @@ public class Parser {
 	void Scenario() {
 		if (la.kind == 1) {
 			Get();
-			if (la.kind == 27) {
+			if (la.kind == 30) {
 				Get();
 				ID();
 			}
@@ -613,14 +637,14 @@ public class Parser {
 		} else if (la.kind == 62) {
 			Get();
 			Expect(1);
-			Expect(27);
+			Expect(30);
 			ID();
 			Expect(16);
 			ActionPattern();
-		} else if (la.kind == 26) {
+		} else if (la.kind == 29) {
 			Get();
 			Expect(1);
-			Expect(27);
+			Expect(30);
 			ID();
 			Expect(16);
 			ActionPattern();
@@ -639,7 +663,7 @@ public class Parser {
 
 	void ActionPattern() {
 		Expect(1);
-		Expect(35);
+		Expect(22);
 		if (StartOf(4)) {
 			PatternPara();
 			while (la.kind == 15) {
@@ -647,7 +671,7 @@ public class Parser {
 				PatternPara();
 			}
 		}
-		Expect(36);
+		Expect(23);
 	}
 
 	void PatternPara() {
@@ -736,10 +760,10 @@ public class Parser {
 				Get();
 			}
 			Designator();
-		} else if (la.kind == 35) {
+		} else if (la.kind == 22) {
 			Get();
 			Exp();
-			Expect(36);
+			Expect(23);
 		} else if (la.kind == 4) {
 			Get();
 		} else if (la.kind == 5) {
@@ -760,10 +784,10 @@ public class Parser {
 
 	private static final boolean[][] set = {
 		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, T,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
 		{x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, T,T,T,T, T,T,T,x, T,x,T,x, x,T,T,x, x,x,T,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,T,T,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,T, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, x,x,x},
+		{x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,T, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,T,T,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, x,x,x},
 		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x,x,x}
 
 	};
@@ -811,21 +835,21 @@ class Errors {
 			case 19: s = "\"enumerate\" expected"; break;
 			case 20: s = "\"=\" expected"; break;
 			case 21: s = "\"caste\" expected"; break;
-			case 22: s = "\"init\" expected"; break;
-			case 23: s = "\"body\" expected"; break;
-			case 24: s = "\"inherits\" expected"; break;
-			case 25: s = "\"observes\" expected"; break;
-			case 26: s = "\"all\" expected"; break;
-			case 27: s = "\"in\" expected"; break;
-			case 28: s = "\"var\" expected"; break;
-			case 29: s = "\":=\" expected"; break;
-			case 30: s = "\"set\" expected"; break;
-			case 31: s = "\"{\" expected"; break;
-			case 32: s = "\"}\" expected"; break;
-			case 33: s = "\"state\" expected"; break;
-			case 34: s = "\"action\" expected"; break;
-			case 35: s = "\"(\" expected"; break;
-			case 36: s = "\")\" expected"; break;
+			case 22: s = "\"(\" expected"; break;
+			case 23: s = "\")\" expected"; break;
+			case 24: s = "\"state\" expected"; break;
+			case 25: s = "\"init\" expected"; break;
+			case 26: s = "\"body\" expected"; break;
+			case 27: s = "\"inherits\" expected"; break;
+			case 28: s = "\"observes\" expected"; break;
+			case 29: s = "\"all\" expected"; break;
+			case 30: s = "\"in\" expected"; break;
+			case 31: s = "\"var\" expected"; break;
+			case 32: s = "\":=\" expected"; break;
+			case 33: s = "\"set\" expected"; break;
+			case 34: s = "\"{\" expected"; break;
+			case 35: s = "\"}\" expected"; break;
+			case 36: s = "\"action\" expected"; break;
 			case 37: s = "\"affect\" expected"; break;
 			case 38: s = "\"begin\" expected"; break;
 			case 39: s = "\"join\" expected"; break;

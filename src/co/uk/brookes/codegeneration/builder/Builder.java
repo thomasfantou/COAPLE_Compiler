@@ -56,7 +56,7 @@ public class Builder {
     public static void add(Obj o) {     //for generating the XML, we use Obj, to add them in the Constant_section
         switch(step) {
             case envdec_:
-                if(o.kind == Obj.var_) {
+                if(o.kind == Obj.environment_) {
                     addLabel(o.name);
                     addEnv(o);
                 }
@@ -164,10 +164,10 @@ public class Builder {
                 case Instruction.env_ : sEnvs += i.index + sepChar; break;
                 case Instruction.cons_ : sCons += i.name + sepChar; break;
             }
-        ins.states = sStates.split(sepChar);
-        ins.actions = sActions.split(sepChar);
-        ins.envs = sEnvs.split(sepChar);
-        ins.cons = sCons.split(sepChar);
+        if(sStates != "") ins.states = sStates.split(sepChar); else ins.states = new String[0];
+        if(sActions != "") ins.actions = sActions.split(sepChar); else ins.actions = new String[0];
+        if(sEnvs != "") ins.envs = sEnvs.split(sepChar); else ins.envs = new String[0];
+        if(sCons != "") ins.cons = sCons.split(sepChar); else ins.cons = new String[0];
 
         //TODO: how to fill these fields ?
         ins.url = getIndex("localhost");
@@ -205,9 +205,10 @@ public class Builder {
     //use operand to chose the right set of instructions
     public static void load(Operand op) {
         switch(op.kind){
-            case Operand.con_: //if it is a constant
+            case Operand.con_:
                 switch(op.type.kind) {
                     case Struct.integer_: put(Instruction.push_ + Instruction.typeint_); break;
+                    case Struct.real_: put(Instruction.push_ + Instruction.typereal_); break;
                     case Struct.string_ : put(Instruction.push_ + Instruction.typestring_); break;
                 }
                 put(op.val);
@@ -231,6 +232,15 @@ public class Builder {
         }
     }
 
+    //insert the observe instruction while declaring environment
+    public static void observe(Operand op) {
+        if(op.kind == Operand.environment_) {
+            put(Instruction.observe_);
+            put(String.valueOf(op.adr));
+            put(Instruction.sendmessage_);
+        }
+    }
+
     public static void assign(Operand op) {
         switch(op.kind){
             case Operand.state_:
@@ -243,9 +253,18 @@ public class Builder {
         }
     }
 
+    public static void endInit() {
+        put(Instruction.return_);
+    }
+    public static void endRooting() {
+        put(Instruction.return_);
+        put(Instruction.quit_);
+    }
+
     static public void put(String code) {
         Instruction ins = new Instruction(code);
         switch(step) {
+            case envdec_: ins.address = curr_init++; init.add(ins); break; //environment observed are instruction in the init block
             case init_: ins.address = curr_init++; init.add(ins); break;
             case rooting_: ins.address = curr_rooting++; rooting.add(ins); break;
         }

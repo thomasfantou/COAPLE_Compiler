@@ -17,7 +17,8 @@ public class Operand {
             stack_  = 3,
             action_   = 4,
             listelem_ = 5,
-            field_ = 6;
+            field_ = 6,
+            environment_ = 7;
 
     public int    kind;	//
     public Struct type;	// item type
@@ -36,6 +37,8 @@ public class Operand {
                 kind = local_; break;
             case Obj.action_:
                 kind = action_; obj = o; break;
+            case Obj.environment_:
+                kind = environment_; break;
             case Obj.type_:
                 Parser.SemErr("type identifier not allowed here"); break;
             default:
@@ -45,6 +48,10 @@ public class Operand {
 
     public Operand(int val) {
         kind = con_; this.val = String.valueOf(val); type = STab.integerType;
+    }
+
+    public Operand(float val) {
+        kind = con_; this.val = String.valueOf(val); type = STab.realType;
     }
 
     public Operand(String val) {

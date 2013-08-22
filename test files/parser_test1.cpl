@@ -13,7 +13,7 @@ end
 
 caste Xxx;
 observes
-	all in Yyy;
+	all y in Yyy;
 state
 	var a: string;
 	var bb: integer;
@@ -42,8 +42,8 @@ end Xxx
 
 caste Yyy;
 state
-	var id: String;
-	var	name: String;
+	var id: string;
+	var	name: string;
 		
 init
 	//empty init

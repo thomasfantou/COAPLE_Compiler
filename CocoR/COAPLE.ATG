@@ -2,6 +2,7 @@ COMPILER Coaple
 CHARACTERS
 	letter = 'a' .. 'z' + 'A' .. 'Z'.
 	digit = "0123456789".
+	period = ".".
 	tab = '\t'.
 	cr = '\r'.
 	lf = '\n'.
@@ -13,7 +14,7 @@ CHARACTERS
 	stringChar = ANY - '"'.
 TOKENS
 	ident = (letter|underscore) {letter|digit|underscore}.
-	number = digit {digit}.
+	number = digit {digit} [period digit {digit}].
 	url = urlChar {letter|slash}.
 	charVal = apostr letter apostr.
 	stringVal = quote stringChar {stringChar} quote.
@@ -62,14 +63,13 @@ PRODUCTIONS
 		ident {"," ident}.
 		
 	CasteDec =
-		"caste" ident [Inheritances] ";"
+		"caste" ident ["("[ParameterList]")"] [Inheritances] ";"
 			[EnvironmentDecs]
-			[StateDecs]
+			"state" [StateDecs]
 			[ActionDecs]
-			"init" Statement
+			"init" [Statement]
 			"body" 
-				[Decs]
-				[ActionDecs]
+				[LocalDecs]
 				Statement
 			"end" ident.
 		
@@ -81,9 +81,9 @@ PRODUCTIONS
 		
 	EnvDec = 
 		ident
-		| "all" "in" ID
-		| "var" ident "in" ID [":=" AgentID]
-		| "set" ident "in" ID [":=" AgentSetEnum].
+		| "all"	ident "in" ID
+		| "var" IDList "in" ID [":=" AgentID]
+		| "set" IDList "in" ID [":=" AgentSetEnum].
 	
 	AgentID	=
 		ident "in" ID.
@@ -95,14 +95,17 @@ PRODUCTIONS
 		"{"
 			ident {"," ident}
 		"}".
-		
-	StateDecs =
-		"state" Decs.
-		
-	Decs = 
-		Dec ";" {Dec ";"}.
+
+	StateDecs = 
+		StateDec ";" {StateDec ";"}.
 	
-	Dec = 
+	StateDec = 
+		"var" IDList ":" TypeExp [":=" ident].
+		
+	LocalDecs =
+		LocalDec ";" {LocalDec ";"}.
+	
+	LocalDec = 
 		"var" IDList ":" TypeExp [":=" ident].
 		
 	ActionDecs =
@@ -123,7 +126,7 @@ PRODUCTIONS
 		"affect" ID { "," ID }.
 		
 	Statement =
-		Designator (":=" Exp | "(" [ParameterList] ")") ";"
+		Designator (":=" Exp | "(" [IDList] ")") ";"
 		| CasteEvent ";"
 		| AgentEvent ";"
 		| Block

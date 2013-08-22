@@ -1,0 +1,48 @@
+type 
+	record Date of
+		day, month, year: integer;
+	//end expected
+end
+
+caste Xxx;
+state
+	var 2bb: integer; //invalid identifier
+	var n1: integer;
+	var n2: integer;
+	var number; //type expected
+	var date : Date;
+	var date2 : Date2;	//Date2 is undeclared
+	var word : string;
+	var letter : char;
+action MyAction(param1 : integer, param2: string, param3)	//type expected
+	begin
+		if param1 = 0 
+		then 
+			param2 := param2 ++ "0";
+		end
+	end	//";" expected
+action MyAction2(param1, param2 : integer);
+action MyAction3(date_ : Date)
+	begin
+		n1 := date_; // Incompatible types : record to integer
+		date := date_;
+	end;
+init
+	begin
+		n3 := 0;	//n3 is undeclared
+		n1 := 1.1;	// Incompatible types : real to integer
+		word := 'd'; //Incompatible types : char to string
+		letter := 'rd';  //invalid Factor	
+		n1 := n2;	//variable "n2" not initialized
+	end
+body
+	begin
+		MyAction2(); //Invalid amount of parameters
+		MyAction2(n1, word);  //Param number 1 has uncompatible type
+		MyAction2(n1, n1);
+		MyAction2(word, n1);  //Param number 0 has uncompatible type
+		n1 := n1 + "no";	//Incompatible types: integer and string
+		n1 := n1 + 3 * 1.1; //Incompatible types: integer and real
+		n1 := 1.1 + 1.2;	//Incompatible types: real to integer
+	end
+end Xxx

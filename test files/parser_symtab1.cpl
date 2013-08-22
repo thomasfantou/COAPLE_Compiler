@@ -9,7 +9,7 @@ end
 
 caste MyCaste;
 observes
-	all in Agent1;
+	all ag1 in Agent1;
 	var ag2 in Agent2;
 	set agSet in Agent2 := { ag3, ag4 };
 state
@@ -28,15 +28,14 @@ init
 	id := 4;
 body
 	var id2: integer;
-	action Test()
-	begin
-		case letter of 
-		"a" -> 
-			begin
-				lie := true;
-				id := id2 + 1;
-			end
-		"z" -> name := "zozo";
+	
+	case letter of 
+	"a" -> 
+		begin
+			lie := true;
+			id := id2 + 1;
 		end
-	end;
+	"z" -> name := "zozo";
+	end
+	
 end Yyy

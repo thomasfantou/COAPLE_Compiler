@@ -31,6 +31,8 @@ public class Parser {
     static public Errors errors;
 
     private static BitSet startOfExp;
+    private static BitSet syncStat;
+
 
     private static final int  // token and char codes
         none        = 0,
@@ -119,7 +121,8 @@ public class Parser {
         apostr      = 124,
         quote       = 125,
         excl        = 126,
-        concat      = 127;
+        concat      = 127,
+        eof         = 128;
 	
 
 	public Parser(Scanner scanner) {
@@ -149,13 +152,21 @@ public class Parser {
 			la = t;
 		}
 	}
+
+    void Sync(String msg) {
+        SemErr(msg);
+        while (!syncStat.get(la.kind)) Get();
+        errDist = 0;
+    }
 	
 	void Expect (int n) {
 		if (la.kind==n) Get(); else { SynErr(n); }
 	}
 	
 	boolean StartOf (int s) {
-		return set[s][la.kind];
+        if(la.kind <= 71) //default generated set[] table is of size 71
+		    return set[s][la.kind];
+        else return false;
 	}
 
 	void ExpectWeak (int n, int follow) {
@@ -254,6 +265,7 @@ public class Parser {
         if (StartOf(3)) {
             Statement();
         }
+        Builder.endInit();
 		Expect(body_);
         Builder.step = Builder.rooting_;
 		if (la.kind == var_) {
@@ -264,6 +276,7 @@ public class Parser {
         }
 		Expect(end_);
 		Expect(ident);
+        Builder.endRooting();
         Builder.step = Builder.castereview_;
         Builder.add(o);
         STab.closeScope();
@@ -371,11 +384,15 @@ public class Parser {
                 Expect(ident);
                 vars.add(t.val);
             }
-            Expect(colon);
-            Struct type = TypeExp();
-            for(String v : vars)
-                STab.insert(Obj.typeField_, v, type);
-            Expect(semicolon);
+            if (la.kind != colon) {
+                Sync("type expected");
+            } else {
+                Expect(colon);
+                Struct type = TypeExp();
+                for(String v : vars)
+                    STab.insert(Obj.typeField_, v, type);
+                Expect(semicolon);
+            }
         }
 		Expect(end_);
         STab.setFields(obj);
@@ -416,13 +433,18 @@ public class Parser {
     //  ident {"," ident}.
 	ArrayList<String> IDList() {
         ArrayList<String> ids = new ArrayList<String>();
-		Expect(ident);
-        ids.add(t.val);
-		while (la.kind == comma) {
-			Get();
-			Expect(ident);
+        if (la.kind != ident) {
+            Sync("invalid identifier");
+        }
+        else{
+            Expect(ident);
             ids.add(t.val);
-		}
+            while (la.kind == comma) {
+                Get();
+                Expect(ident);
+                ids.add(t.val);
+            }
+        }
         return ids;
 	}
 
@@ -470,7 +492,7 @@ public class Parser {
 	}
 
     //Statement =
-    //    Designator (":=" Exp | "(" [ParameterList] ")") ";"
+    //    Designator (":=" Exp | "(" [IDList] ")") ";"
     //    | CasteEvent ";"
     //    | AgentEvent ";"
     //    | Block
@@ -481,63 +503,98 @@ public class Parser {
     //    | ForAllStatement
     //    | WhenStatement.
 	void Statement() {
-		switch (la.kind) {
-		case ident: {
-			Operand op = Designator();
-			if (la.kind == assign) {
-				Get();
-				Exp();
-                Builder.assign(op);
-			} else if (la.kind == lpar) {
-				Get();
-				if (la.kind == ident) {
-					ParameterList();
-				}
-				Expect(rpar);
-			} else SynErr(74);
-            Expect(semicolon);
-			break;
-		}
-		case join_: case quit_: case suspend_: case resume_: {
-			CasteEvent();
-            Expect(semicolon);
-			break;
-		}
-		case create_: case destroy_: {
-			AgentEvent();
-            Expect(semicolon);
-			break;
-		}
-		case begin_: {
-			Block();
-			break;
-		}
-		case loop_: case while_: case repeat_: case for_: {
-			LoopStatement();
-			break;
-		}
-		case if_: {
-			IfStatement();
-			break;
-		}
-		case case_: {
-			CaseStatement();
-			break;
-		}
-		case with_: {
-			WithStatement();
-			break;
-		}
-		case forall_: {
-			ForAllStatement();
-			break;
-		}
-		case when_: {
-			WhenStatement();
-			break;
-		}
-		default: SynErr(75); break;
-		}
+        if (!StartOf(3)) {
+            Sync("invalid start of statement");
+        } else {
+            switch (la.kind) {
+                case ident: {
+                    Obj obj = Designator();
+                    Operand op = new Operand(obj);
+                    if (la.kind == assign) {
+                        obj.initialized = true;
+                        Get();
+                        int type = Exp();
+                        Struct stype = new Struct(type); //create the struct to check if it is assignable
+                        if(type == Struct.none_)    //if the expression is an invalid factor
+                            while(la.kind != semicolon && la.kind != eof) Get();
+                        else if(op.type != null) {  //if the designator is undeclared
+                            if(!stype.assignableTo(op.type))
+                                SemErr("Incompatible types: " + Struct.values[type] + " to " + Struct.values[op.type.kind]);
+                        }
+                        Builder.assign(op);
+                    } else if (la.kind == lpar) {
+                        Get();
+
+                        int nPars = 0;
+                        if (la.kind == ident) {
+                            ArrayList<String> ids = IDList();
+                            nPars = ids.size();
+                            if(nPars == op.obj.nPars){     //if the action call has the same amount of param
+                                for(int i = 0; i < ids.size(); i++){ //we are looping through the params
+                                    Obj o = STab.find(ids.get(i));
+                                    if(o != STab.noObj) {   //if the parameter is defined
+                                        for(Obj p = op.obj.locals; p != null; p = p.next) {
+                                            if(p.adr == i) {    //for the param number i, we will find the object in the locals variable of the method to the position i
+                                                if(p.type.kind != o.type.kind) {
+                                                    SemErr("Param number " + i + " has uncompatible type");
+                                                }
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if(nPars != op.obj.nPars){     //if the action call doesn't have the same amount of param
+                            SemErr("Invalid amount of parameters");
+                        }
+
+                        Expect(rpar);
+                    } else SynErr(74);
+                    Expect(semicolon);
+                    break;
+                }
+                case join_: case quit_: case suspend_: case resume_: {
+                    CasteEvent();
+                    Expect(semicolon);
+                    break;
+                }
+                case create_: case destroy_: {
+                    AgentEvent();
+                    Expect(semicolon);
+                    break;
+                }
+                case begin_: {
+                    Block();
+                    break;
+                }
+                case loop_: case while_: case repeat_: case for_: {
+                    LoopStatement();
+                    break;
+                }
+                case if_: {
+                    IfStatement();
+                    break;
+                }
+                case case_: {
+                    CaseStatement();
+                    break;
+                }
+                case with_: {
+                    WithStatement();
+                    break;
+                }
+                case forall_: {
+                    ForAllStatement();
+                    break;
+                }
+                case when_: {
+                    WhenStatement();
+                    break;
+                }
+                default: SynErr(75); break;
+            }
+        }
 	}
 
     //Block =
@@ -557,15 +614,24 @@ public class Parser {
 	void StateDec() {
         Expect(var_);
         ArrayList<String> ids = IDList();
-        Expect(colon);
-        Struct type = TypeExp();
-        for(String id : ids){
-            Obj obj = STab.insert(Obj.state_, id, type);
-            Builder.add(obj);
-        }
-        if (la.kind == assign) {
-            Get();
-            Expect(ident);
+        if (la.kind != colon) {
+            Sync("type expected");
+        } else {
+            Expect(colon);
+
+            Struct type = TypeExp();
+            if (type == null) {
+                Sync("invalid start of statement");
+            } else {
+                for(String id : ids){
+                    Obj obj = STab.insert(Obj.state_, id, type);
+                    Builder.add(obj);
+                }
+                if (la.kind == assign) {
+                    Get();
+                    Expect(ident);
+                }
+            }
         }
 	}
 
@@ -602,9 +668,36 @@ public class Parser {
             }
 		} else if (la.kind == var_) {
 			Get();
-            IDList();
+            ArrayList<String> ids = IDList();
 			Expect(in_);
-			ID();
+            String id = ID();
+            Builder.add(id);    //add the value to the constants object file
+            Obj objID = STab.find(id);
+            if(!objID.equals(STab.noObj)){ //if object defined
+                if(objID.kind == Obj.type_ && objID.type.kind == Struct.caste_) { //if it's a caste
+                    for(String ident : ids){
+                        Obj objIdent = STab.insert(Obj.environment_, ident, objID.type);
+                        objIdent.type.name = id;
+                        Builder.add(objIdent);
+                        //the env val is now added to the constant section, then we add instructions for observing it
+                        Operand op = new Operand(objIdent);
+                        Builder.observe(op);
+                    }
+                }
+                else
+                    SemErr("invalid caste");
+            }
+            else {  //TODO: if caste undefined (but what if it is defined later or in another file) (proposition: stack it and check the stack when the first parse is done)
+                Struct struct = new Struct(Struct.caste_);
+                struct.name = id;
+                for(String ident : ids){
+                    Obj objIdent = STab.insert(Obj.environment_, ident, struct);
+                    Builder.add(objIdent);
+                    //the env val is now added to the constant section, then we add instructions for observing it
+                    Operand op = new Operand(objIdent);
+                    Builder.observe(op);
+                }
+            }
 			if (la.kind == assign) {
 				Get();
 				AgentID();
@@ -706,12 +799,10 @@ public class Parser {
     //  Parameter {"," Parameter}.
 	int ParameterList() {
         int nParam = 0;
-		Parameter();
-        nParam++;
+		nParam += Parameter();
 		while (la.kind == comma) {
 			Get();
-			Parameter();
-            nParam++;
+			nParam += Parameter();
 		}
         return nParam;
 	}
@@ -729,28 +820,37 @@ public class Parser {
 
     //Parameter =
     //  ident {"," ident} ":" TypeExp.
-	void Parameter() {
+	int Parameter() {
+        int nParam = 0;
         ArrayList<String> ids = new ArrayList<String>();
 		Expect(ident);
         ids.add(t.val);
+        nParam++;
 		while (la.kind == comma) {
 			Get();
 			Expect(ident);
             ids.add(t.val);
+            nParam++;
 		}
-		Expect(colon);
-		Struct type = TypeExp();
-        for(String id : ids)
-            STab.insert(Obj.var_, id, type);
+        if (la.kind != colon) {
+            Sync("type expected");
+        } else {
+            Expect(colon);
+            Struct type = TypeExp();
+            for(String id : ids) {
+                Obj obj = STab.insert(Obj.var_, id, type);
+                obj.initialized = true; //a parameter is an initialized variable
+            }
+        }
+        return nParam;
 	}
 
     //Designator =
     //  ident { "." ident } ["[" Exp "]"].<
-	Operand Designator() {
+	Obj Designator() {
         Operand op;
 		Expect(ident);
         Obj obj = STab.find(t.val);
-        op = new Operand(obj);
 		while (la.kind == period) {
 			Get();
 			Expect(ident);
@@ -760,7 +860,7 @@ public class Parser {
             Exp();
             Expect(rbrack);
         }
-        return op;
+        return obj;
 	}
 
     //Exp =
@@ -769,9 +869,18 @@ public class Parser {
 		int type = Term();
 		while (la.kind == plus || la.kind == minus || la.kind == concat) {
 			String insVal = Addop();
-			Term(); //TODO: verify that this term is the same type as the first term
-            switch(type){
-                case Struct.integer_: Builder.put(insVal + Instruction.typeint_); break;
+			int type2 = Term();
+            if((type == Struct.integer_ && type2 == Struct.integer_) ||
+                    (type == Struct.real_ && type2 == Struct.real_) ||
+                    (type == Struct.string_ && type2 == Struct.string_)) {  //TODO: string concatenation
+                switch(type){
+                    case Struct.integer_: Builder.put(insVal + Instruction.typeint_); break;
+                    case Struct.real_: Builder.put(insVal + Instruction.typereal_); break;
+                }
+            }
+            else {
+                SemErr("Incompatible types: " + Struct.values[type] + " and " + Struct.values[type2]);
+                while(la.kind != semicolon && la.kind != eof) Get();
             }
 		}
         return type;
@@ -780,7 +889,7 @@ public class Parser {
     //Conditions =
     //  Condition {Boolop Condition}.
     void Conditions() {
-        Condition();
+        int rel = Condition();
         while(la.kind == and_ || la.kind == or_) {
             Boolop();
             Condition();
@@ -789,13 +898,14 @@ public class Parser {
 
     //Condition =
     //  Exp [Relop Exp].
-    void Condition() {
+    int Condition() {
         Exp();
         if(la.kind == neq || la.kind == gtr || la.kind == geq
                 || la.kind == lss || la.kind == leq || la.kind == eqlSign) {
             Relop();
             Exp();
         }
+        return la.kind;
     }
 
     //CasteEvent =
@@ -1063,11 +1173,20 @@ public class Parser {
 		type = Factor();
 		while (la.kind == times || la.kind == slash || la.kind == rem) {
 			String insVal = Mulop();
-			Factor(); //TODO: verify the type is the same than the first factor
 
-            switch(type) {
-                case Struct.integer_: Builder.put(insVal + Instruction.typeint_); break;
+			int type2 = Factor();
+            if((type == Struct.integer_ && type2 == Struct.integer_) ||
+                    (type == Struct.real_ && type2 == Struct.real_)) {
+                switch(type) {
+                    case Struct.integer_: Builder.put(insVal + Instruction.typeint_); break;
+                    case Struct.real_: Builder.put(insVal + Instruction.typereal_); break;
+                }
             }
+            else {
+                SemErr("Incompatible types: " + Struct.values[type] + " and " + Struct.values[type2]);
+                while(la.kind != semicolon && la.kind != eof) Get();
+            }
+
 		}
         return type;
 	}
@@ -1129,15 +1248,26 @@ public class Parser {
 	int Factor() {
         int type = Struct.none_;
 		if (la.kind == number) {
-            type = Struct.integer_;
 			Get();
-            int number = Integer.parseInt(t.val);
-            Operand op = new Operand(number);
-            Builder.load(op);
+            if(!t.val.contains(".")) {
+                type = Struct.integer_;
+                int number = Integer.parseInt(t.val);
+                Operand op = new Operand(number);
+                Builder.load(op);
+            } else {
+                type = Struct.real_;
+                float number = Float.parseFloat(t.val);
+                Operand op = new Operand(number);
+                Builder.load(op);
+            }
 		} else if (la.kind == ident || la.kind == not_) {
             if(la.kind == not_) Get();
-			Operand op = Designator();
-            type = op.type.kind;
+			Obj obj = Designator();
+            if(!obj.initialized)
+                SemErr("variable \"" + obj.name + "\" not initialized");
+            Operand op = new Operand(obj);
+            if(op.type != null)
+                type = op.type.kind;
             Builder.load(op);
 		} else if (la.kind == lpar) {
 			Get();
@@ -1176,6 +1306,13 @@ public class Parser {
         BitSet s;
         s = new BitSet(64); startOfExp = s;
         s.set(number); s.set(not_); s.set(ident); s.set(lpar); s.set(charVal); s.set(stringVal);
+
+        //for the error synchronization, those are the token for the recovery
+        s = new BitSet(64); syncStat = s;
+        s.set(type_); s.set(caste_); s.set(init_); s.set(body_); s.set(observes_);
+        s.set(var_); s.set(state_); s.set(action_); s.set(affect_); s.set(begin_); s.set(join_); s.set(quit_); s.set(suspend_); s.set(resume_);
+        s.set(create_); s.set(destroy_); s.set(loop_); s.set(while_); s.set(do_); s.set(repeat_); s.set(until_); s.set(for_); s.set(to_); s.set(by_);
+        s.set(forall_); s.set(if_); s.set(then_); s.set(elseif_); s.set(else_); s.set(case_); s.set(with_); s.set(when_); s.set(exist_);
     }
 
     //for StartOf, created by Coco/R
@@ -1191,7 +1328,7 @@ public class Parser {
 
 
 class Errors {
-	public int count = 0;                                    // number of errors detected
+	public static int count = 0;                                    // number of errors detected
     public java.io.PrintStream errorStream = System.out;     // error messages go to this stream
     public String errMsgFormat = "-- line {0} col {1}: {2}"; // 0=line, 1=column, 2=text
 	
@@ -1305,6 +1442,7 @@ class Errors {
 			default: s = "error " + n; break;
 		}
 		printMsg(line, col, s);
+
 		count++;
 	}
 

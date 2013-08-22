@@ -19,9 +19,7 @@ public class Instruction {
         if_    = 14,
         comparestring_      = 15,
         nop_      = 16,
-        return_      = 17,
         jump_     = 18,
-        quit_      = 19,
         yield_      = 20,
         loadcaste_    = 21,
         agentnew_      = 22,
@@ -37,7 +35,6 @@ public class Instruction {
         updateaction_ = 33,
         param_    = 35,
         paramstring_     = 36,
-        observe_ = 37,
         patternexist_     = 38,
         patternmatch_ = 39,
         resetvar_ = 40,
@@ -61,6 +58,7 @@ public class Instruction {
     static public final String // instruction code
         push_ = "PUSH",
         typeint_ = "INT",
+        typereal_ = "REAL",
         typestring_ = "STRING",
         setstate_ = "SETSTATE",
         upstate_ = "UPSTATE",
@@ -70,7 +68,10 @@ public class Instruction {
         mul_    = "MUL",
         div_    = "DIV",
         sendmessage_ = "SENDMESSAGE",
-        pushstate_ = "PUSHSTATE";
+        pushstate_ = "PUSHSTATE",
+        observe_ = "OBSERVE",
+        return_ = "RETURN",
+        quit_ = "QUIT";
 
     public static final int  // instruction kind
         constant_ = 0,

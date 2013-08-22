@@ -1,0 +1,30 @@
+caste Monitor;
+observes 
+	all p in Peer;
+state
+	var x: integer;
+	var y: integer;
+	var g: string;
+	var z: real;
+action
+	test(param1 : integer, param2 : string)
+	begin
+		if param1 = 0 
+		then 
+			param2 := "hello";
+		end
+	end;
+init 
+	begin
+		x := 2;
+		//x := 4 + 3 * 2 + 1;
+		//x := (1 + 5) * 10;
+		//g := "koko!";
+		//z := 3.1 - 1.1;
+		
+		if x = 0 then y := 0; end
+		//while x < 10 do x := x + 1; end
+	end
+body
+	//x := y + 10;
+end Monitor

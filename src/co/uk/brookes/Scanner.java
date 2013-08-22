@@ -251,6 +251,7 @@ class StartStates {
 //-----------------------------------------------------------------------------------
 public class Scanner {
 	static final char EOL = '\n';
+    static final char eofCh = '\u0080';
 	static final int  eofSym = 0;
 	static final int maxT = 300;
 	static final int noSym = 70;
@@ -280,6 +281,7 @@ public class Scanner {
         identChar   = 201,
         number      = 2,
         digit       = 202,
+        decimal     = 205,
         atsign      = 3,
         charVal     = 203,
         stringVal   = 204,
@@ -361,7 +363,8 @@ public class Scanner {
         apostr      = 124,
         quote       = 125,
         excl        = 126,
-        concat      = 127;
+        concat      = 127,
+        eof         = 128;
 
 	static {
 		start = new StartStates();
@@ -585,15 +588,19 @@ public class Scanner {
 					t.kind = recKind; break loop;
 				} // NextCh already done
 				case identChar:
-					recEnd = pos; recKind = 1;
+					recEnd = pos; recKind = ident;
                     if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); state = identChar; break;}
 					else {t.kind = ident; t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}
 				case digit:
-					recEnd = pos; recKind = 2;
-					if (ch >= '0' && ch <= '9') {AddCh(); state = digit; break;}
+					recEnd = pos; recKind = number;
+                    if (ch == '.') {AddCh(); state = decimal; break;}
+					else if (ch >= '0' && ch <= '9') {AddCh(); state = digit; break;}
 					else {t.kind = number; break loop;}
+                case decimal:
+                    if (ch >= '0' && ch <= '9') {AddCh(); state = decimal; break;}
+                    else {t.kind = number; break loop;}
 				case atsign:
-					recEnd = pos; recKind = 3;
+					recEnd = pos; recKind = atsign;
 					if (ch == '/' || ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z') {AddCh(); state = atsign; break;}
 					else {t.kind = atsign; break loop;}
 				case comma:                                         // ,
@@ -671,6 +678,7 @@ public class Scanner {
                     {t.kind = assign; break loop;}
                 case effect:
                     {t.kind = effect; break loop;}
+                case eofCh: t.kind = eof; break;  // no nextCh() any more
 			}
 		}
 		t.val = new String(tval, 0, tlen);

@@ -51,7 +51,7 @@ public class STab {
     {
         //--- create object node
         Obj obj = new Obj(kind, name, type);
-        if (kind == Obj.var_) {
+        if (kind == Obj.var_ || kind == Obj.typeField_) {
             obj.adr = curScope.nVars++;
             obj.level = curLevel;
         }
@@ -77,7 +77,7 @@ public class STab {
         if (last == null) curScope.locals = obj; else last.next = obj;
         if(main.LOGGING_SYMTAB_ENABLED){
             for(int i = 0; i < curLevel + 1; i++) System.out.print("--");
-            System.out.println(Obj.values[kind] + "(" + Struct.values[type.kind] +") \"" + name + "\"");
+            System.out.println(Obj.values[kind] + "[" + obj.adr + "](" + Struct.values[type.kind] +") \"" + name + "\"");
         }
         return obj;
     }

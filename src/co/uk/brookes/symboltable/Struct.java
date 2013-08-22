@@ -29,4 +29,11 @@ public class Struct {
     public Struct(int kind) {
         this.kind = kind;
     }
+
+    // Checks if an object with type "this" can be assigned to an object with type "dest"
+    public boolean assignableTo(Struct dest) {
+        return this.kind == dest.kind; //only assignable when same type
+           //     ||	this.kind == integer_ && dest.kind == real_
+           //     ||  this.kind == real_ && dest.kind == integer_;
+    }
 }

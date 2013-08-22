@@ -15,7 +15,7 @@ public class Obj {
             state_  = 6;
 
     public static final String[] values = {
-            "con", "var", "type", "action", "type_field", "environment"};
+            "con", "var", "type", "action", "type_field", "environment", "state"};
 
     public int    kind;		// Con, Var, Type, Meth, Prog
     public String name;		// object name
@@ -26,6 +26,7 @@ public class Obj {
     public int    nPars;    // Action: number of parameters
     public Obj    locals;   // Action: parameters and local objects
     public Obj    next;		// next local object in this scope
+    public boolean initialized; //if constant has been initialized
 
     public Obj(int kind, String name, Struct type) {
         this.kind = kind; this.name = name; this.type = type;
