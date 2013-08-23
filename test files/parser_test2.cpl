@@ -34,6 +34,7 @@ init
 		word := 'd'; //Incompatible types : char to string
 		letter := 'rd';  //invalid Factor	
 		n1 := n2;	//variable "n2" not initialized
+		if n1 = 3.2 then n2 := 0; end	//Not comparable types: integer and real
 	end
 body
 	begin

@@ -1,5 +1,7 @@
 package co.uk.brookes.codegeneration.builder;
 
+import co.uk.brookes.Parser;
+import co.uk.brookes.Token;
 import co.uk.brookes.codegeneration.Operand;
 import co.uk.brookes.symboltable.Obj;
 import co.uk.brookes.symboltable.Struct;
@@ -7,6 +9,7 @@ import co.uk.brookes.symboltable.Struct;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Author: Fantou Thomas
@@ -35,6 +38,14 @@ public class Builder {
         curr_rooting = 0,
         curr_cons = 0;
 
+    public static int statementType;    //define what is the current statement type to set the right instructions
+    public final static int
+        none = 0,
+        if_statement = 1;
+
+    public static ArrayList<Integer> JumpsIn; //this is a temporary list in which we add address of jumps that will jump into the statement during a fixup, instead of jumping outside
+    static int startAddressOfStatement;
+
     public static void init() {
         constants = new ArrayList<Instruction>();
         init = new ArrayList<Instruction>();
@@ -44,10 +55,22 @@ public class Builder {
         idx = 0;
 
         step = envdec_;
+        statementType = none;
+
+        JumpsIn = new ArrayList<Integer>();
+        startAddressOfStatement = 0;
 
         //default nodes
         addLabel("localhost");
         addLabel("all");
+    }
+
+    //notify the begining of a statement, to store the address of its first instruction
+    public static void statementStart() {
+        switch(step) {
+            case init_: startAddressOfStatement = curr_init; break;
+            case rooting_: startAddressOfStatement = curr_rooting; break;
+        }
     }
 
 
@@ -241,6 +264,7 @@ public class Builder {
         }
     }
 
+    //assigning a value to a variable
     public static void assign(Operand op) {
         switch(op.kind){
             case Operand.state_:
@@ -261,13 +285,59 @@ public class Builder {
         put(Instruction.quit_);
     }
 
-    static public void put(String code) {
+    //called in Conditions(), can be called in a if, while and repeat statement.
+    //return the address of the instruction (for a jump forward, we need to fixup the jump address later)
+    public static int condition(int[] inf) {    //inf[0] = type, inf[1] = operator
+        switch(statementType) {
+            case if_statement:
+                switch(inf[0]){
+                    case Struct.integer_: put(Instruction.sub_ + Instruction.typeint_); break;
+                    case Struct.real_: put(Instruction.sub_ + Instruction.typereal_); break;
+                }
+                switch(inf[1]){
+                    case Token.eqlSign: if(inf[2] == Token.or_) return put(Instruction.ifeq_); else return put(Instruction.ifne_);
+                    case Token.neq: if(inf[2] == Token.or_) return put(Instruction.ifne_); else return put(Instruction.ifeq_);
+                    case Token.gtr: if(inf[2] == Token.or_) return put(Instruction.iflt_); else Parser.SemErr("Operator '>' cannot be used, see Builder.condition() explanation"); break; //TODO: implement IFGE in the VM
+                    case Token.geq: if(inf[2] == Token.or_) return put(Instruction.ifle_); else  return put(Instruction.ifgt_);
+                    case Token.lss: if(inf[2] == Token.or_) return put(Instruction.ifgt_); else return put(Instruction.ifle_);
+                    case Token.leq: /*if(inf[2] == Token.or_) return put(Instruction.ifge_); else*/ return put(Instruction.iflt_); //TODO: implement IFGE in the VM
+                }
+            break;
+        }
+        return 0;
+    }
+
+    //when a jump forward is required, the fixup will fixup the previous jump instruction to set the jump address
+    public static void fixup(ArrayList<Integer> addresses) {
+        switch(step) {
+            case init_: for(Integer address : addresses) init.get(address).fixup(getFixupJumpAddress(address)); break;
+            case rooting_: for(Integer address : addresses) rooting.get(address).fixup(getFixupJumpAddress(address)); break;
+        }
+    }
+
+    private static int getFixupJumpAddress(int srcAddress) {
+        int addressToJump = 0;
+        if(JumpsIn.contains(srcAddress)) {
+            addressToJump = startAddressOfStatement;
+            JumpsIn.remove(JumpsIn.indexOf(srcAddress));
+        }
+        else {
+            switch(step) {
+                case init_: addressToJump = curr_init; break;
+                case rooting_: addressToJump = curr_rooting; break;
+            }
+        }
+        return addressToJump;
+    }
+
+    static public int put(String code) {
         Instruction ins = new Instruction(code);
         switch(step) {
             case envdec_: ins.address = curr_init++; init.add(ins); break; //environment observed are instruction in the init block
             case init_: ins.address = curr_init++; init.add(ins); break;
             case rooting_: ins.address = curr_rooting++; rooting.add(ins); break;
         }
+        return ins.address;
     }
 
 

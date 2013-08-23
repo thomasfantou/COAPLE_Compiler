@@ -16,13 +16,17 @@ action
 	end;
 init 
 	begin
-		x := 2;
+		//x := 2;
 		//x := 4 + 3 * 2 + 1;
 		//x := (1 + 5) * 10;
 		//g := "koko!";
 		//z := 3.1 - 1.1;
 		
-		if x = 0 then y := 0; end
+		//if x = 1 then y := 0; end
+		//if x <= 1 then y := 0; end //try the different operator
+		//if x >= 1 and x < 3 then y := 0; end
+		//if x = 0 or y = 0 or z = 0.0 then g := "zero"; end
+		//if x < 10 or y <= 10 then g := "good"; end
 		//while x < 10 do x := x + 1; end
 	end
 body

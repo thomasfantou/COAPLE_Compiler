@@ -71,7 +71,12 @@ public class Instruction {
         pushstate_ = "PUSHSTATE",
         observe_ = "OBSERVE",
         return_ = "RETURN",
-        quit_ = "QUIT";
+        quit_ = "QUIT",
+        ifne_ = "IFNE",
+        ifeq_ = "IFEQ",
+        ifle_ = "IFLE",
+        iflt_ = "IFLT",
+        ifgt_ = "IFGT";
 
     public static final int  // instruction kind
         constant_ = 0,
@@ -117,6 +122,10 @@ public class Instruction {
     public Instruction(String code) {
         this.kind = bytecode_;
         this.insVal = code;
+    }
+
+    public void fixup(int address){
+        this.insVal += " " + address;
     }
 
 }

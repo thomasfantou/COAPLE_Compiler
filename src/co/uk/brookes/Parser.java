@@ -32,97 +32,6 @@ public class Parser {
 
     private static BitSet startOfExp;
     private static BitSet syncStat;
-
-
-    private static final int  // token and char codes
-        none        = 0,
-        ident       = 1,
-        letter      = 201,
-        number      = 2,
-        digit       = 202,
-        atsign      = 3,
-        charVal     = 203,
-        stringVal   = 204,
-        type_		= 4,
-        integer_	= 6,
-        real_	    = 7,
-        bool_		= 8,
-        char_		= 9,
-        string_		= 10,
-        record_		= 11,
-        of_			= 12,
-        end_		= 15,
-        list_		= 16,
-        enumerate_	= 17,
-        caste_		= 19,
-        init_		= 20,
-        body_		= 21,
-        inherits_	= 22,
-        observes_	= 23,
-        all_		= 24,
-        in_			= 25,
-        var_		= 26,
-        set_		= 28,
-        state_		= 31,
-        action_		= 32,
-        affect_		= 35,
-        begin_		= 36,
-        join_		= 37,
-        quit_		= 38,
-        suspend_	= 39,
-        resume_		= 40,
-        create_		= 41,
-        destroy_	= 42,
-        loop_		= 43,
-        while_		= 44,
-        do_			= 45,
-        repeat_		= 46,
-        until_		= 47,
-        for_		= 48,
-        to_			= 49,
-        by_			= 50,
-        forall_		= 51,
-        if_			= 52,
-        then_		= 53,
-        elseif_		= 54,
-        else_		= 55,
-        case_		= 56,
-        with_		= 58,
-        when_		= 59,
-        exist_		= 60,
-        and_		= 61,
-        or_			= 62,
-        xor_		= 63,
-        not_        = 64,
-        plus        = 100,
-        minus       = 101,
-        times       = 102,
-        slash       = 103,
-        rem         = 104,
-        eqlSign     = 105,
-        neq         = 106,
-        lss         = 107,
-        leq         = 108,
-        gtr         = 109,
-        geq         = 110,
-        assign      = 111,
-        semicolon   = 112,
-        colon       = 113,
-        comma       = 114,
-        period      = 115,
-        lpar        = 116,
-        rpar        = 117,
-        lbrack      = 118,
-        rbrack      = 119,
-        lbrace      = 120,
-        rbrace      = 121,
-        aslash      = 122,
-        effect      = 123,
-        apostr      = 124,
-        quote       = 125,
-        excl        = 126,
-        concat      = 127,
-        eof         = 128;
 	
 
 	public Parser(Scanner scanner) {
@@ -200,10 +109,10 @@ public class Parser {
     //Prog =
     //  {TypeDec} {CasteDec}.
 	void Prog() {
-		while (la.kind == type_) {
+		while (la.kind == Token.type_) {
 			TypeDec();
 		}
-		while (la.kind == caste_) {
+		while (la.kind == Token.caste_) {
 			CasteDec();
 		}
 	}
@@ -211,12 +120,12 @@ public class Parser {
     //TypeDec =
     //  "type" StructureType {StructureType} "end".
 	void TypeDec() {
-		Expect(type_);
+		Expect(Token.type_);
 		StructureType();
-		while (la.kind == record_ || la.kind == list_ || la.kind == enumerate_) {
+		while (la.kind == Token.record_ || la.kind == Token.list_ || la.kind == Token.enumerate_) {
 			StructureType();
 		}
-        Expect(end_);
+        Expect(Token.end_);
 	}
 
 
@@ -231,51 +140,51 @@ public class Parser {
     //    [Statement]
     //"end" ident.
 	void CasteDec() {
-		Expect(caste_);
-		Expect(ident);
+		Expect(Token.caste_);
+		Expect(Token.ident);
         Obj o = STab.insert(Obj.type_, t.val, new Struct(Struct.caste_));
         Builder.add(o.name);
         STab.openScope();
-        if(la.kind == lpar) {
+        if(la.kind == Token.lpar) {
             Get();
-            if (la.kind == ident) {
+            if (la.kind == Token.ident) {
                 ParameterList();
             }
-            Expect(rpar);
+            Expect(Token.rpar);
         }
-		if (la.kind == inherits_) {
+		if (la.kind == Token.inherits_) {
 			Inheritances();
 		}
-		Expect(semicolon);
-        if (la.kind == observes_) {
+		Expect(Token.semicolon);
+        if (la.kind == Token.observes_) {
             Builder.step = Builder.envdec_;
 			EnvironmentDecs();
 		}
-		if (la.kind == state_) {
+		if (la.kind == Token.state_) {
             Builder.step = Builder.statedec_;
             Get();
 			StateDecs();
 		}
-		if (la.kind == action_) {
+		if (la.kind == Token.action_) {
             Builder.step = Builder.actiondec_;
 			ActionDecs();
 		}
-		Expect(init_);
+		Expect(Token.init_);
         Builder.step = Builder.init_;
         if (StartOf(3)) {
             Statement();
         }
         Builder.endInit();
-		Expect(body_);
+		Expect(Token.body_);
         Builder.step = Builder.rooting_;
-		if (la.kind == var_) {
+		if (la.kind == Token.var_) {
             LocalDecs();
 		}
         if (StartOf(3)) {
             Statement();
         }
-		Expect(end_);
-		Expect(ident);
+		Expect(Token.end_);
+		Expect(Token.ident);
         Builder.endRooting();
         Builder.step = Builder.castereview_;
         Builder.add(o);
@@ -288,13 +197,13 @@ public class Parser {
     //    | EnumeratedType.
 	Struct StructureType() {
         Struct type = null;
-		if (la.kind == record_) {
+		if (la.kind == Token.record_) {
 			RecordType();
             type = new Struct(Struct.record_);
-		} else if (la.kind == list_) {
+		} else if (la.kind == Token.list_) {
 			ListType();
             type = new Struct(Struct.list_);
-		} else if (la.kind == enumerate_) {
+		} else if (la.kind == Token.enumerate_) {
 			EnumeratedType();
             type = new Struct(Struct.enum_);
 		} else SynErr(71);
@@ -309,9 +218,9 @@ public class Parser {
         Struct type = null;
 		if (StartOf(1)) {
             type = PrimitiveType();
-		} else if (la.kind == record_ || la.kind == list_ || la.kind == enumerate_) {
+		} else if (la.kind == Token.record_ || la.kind == Token.list_ || la.kind == Token.enumerate_) {
             type = StructureType();
-		} else if (la.kind == ident) {
+		} else if (la.kind == Token.ident) {
 			String id = ID();
             Obj obj = STab.find(id);
             if(!obj.equals(STab.noObj)){
@@ -335,19 +244,19 @@ public class Parser {
     //  | "string".
 	Struct PrimitiveType() {
         Struct type = null;
-		if (la.kind == integer_) {
+		if (la.kind == Token.integer_) {
 			Get();
             type = new Struct(Struct.integer_);
-		} else if (la.kind == real_) {
+		} else if (la.kind == Token.real_) {
 			Get();
             type = new Struct(Struct.real_);
-		} else if (la.kind == bool_) {
+		} else if (la.kind == Token.bool_) {
 			Get();
             type = new Struct(Struct.bool_);
-		} else if (la.kind == char_) {
+		} else if (la.kind == Token.char_) {
 			Get();
             type = new Struct(Struct.char_);
-		} else if (la.kind == string_) {
+		} else if (la.kind == Token.string_) {
 			Get();
             type = new Struct(Struct.string_);
 		} else SynErr(73);
@@ -358,9 +267,9 @@ public class Parser {
     //ID =
     //  ident [url].
 	String ID() {
-		Expect(ident);
+		Expect(Token.ident);
         String val = t.val;
-		if (la.kind == atsign) {
+		if (la.kind == Token.atsign) {
 			Get();
 		}
         return val;
@@ -370,31 +279,31 @@ public class Parser {
     //    "record" ident "of" { ident {"," ident} ":" TypeExp ";" }
     //    "end".
 	void RecordType() {
-		Expect(record_);
-		Expect(ident);
+		Expect(Token.record_);
+		Expect(Token.ident);
         Obj obj = STab.insert(Obj.type_, t.val, new Struct(Struct.record_));
-		Expect(of_);
+		Expect(Token.of_);
         STab.openScope();
-        while(la.kind == ident) {
+        while(la.kind == Token.ident) {
             ArrayList<String> vars = new ArrayList<String>();
             Get();
             vars.add(t.val);
-            while (la.kind == comma) {
+            while (la.kind == Token.comma) {
                 Get();
-                Expect(ident);
+                Expect(Token.ident);
                 vars.add(t.val);
             }
-            if (la.kind != colon) {
+            if (la.kind != Token.colon) {
                 Sync("type expected");
             } else {
-                Expect(colon);
+                Expect(Token.colon);
                 Struct type = TypeExp();
                 for(String v : vars)
                     STab.insert(Obj.typeField_, v, type);
-                Expect(semicolon);
+                Expect(Token.semicolon);
             }
         }
-		Expect(end_);
+		Expect(Token.end_);
         STab.setFields(obj);
         STab.closeScope();
 	}
@@ -402,29 +311,29 @@ public class Parser {
     //ListType =
     //  "list" ident "of" TypeExp "end".
 	void ListType() {
-		Expect(list_);
-		Expect(ident);
+		Expect(Token.list_);
+		Expect(Token.ident);
         Obj obj = STab.insert(Obj.type_, t.val, new Struct(Struct.list_));
-		Expect(of_);
+		Expect(Token.of_);
         STab.openScope();
 		Struct type = TypeExp();
         obj.type.listType = type;
-		Expect(end_);
+		Expect(Token.end_);
         STab.closeScope();
 	}
 
     //EnumeratedType =
     //  "enumerate" ident "=" IDList "end".
 	void EnumeratedType() {
-		Expect(enumerate_);
-		Expect(ident);
+		Expect(Token.enumerate_);
+		Expect(Token.ident);
         Obj obj = STab.insert(Obj.type_, t.val, new Struct(Struct.enum_));
-		Expect(eqlSign);
+		Expect(Token.eqlSign);
         STab.openScope();
 		ArrayList<String> ids = IDList();
         for(int i = 0; i < ids.size(); i++)
             STab.insert(Obj.typeField_, ids.get(i), new Struct(Struct.integer_));
-		Expect(end_);
+		Expect(Token.end_);
         STab.setFields(obj);
         STab.closeScope();
 	}
@@ -433,15 +342,15 @@ public class Parser {
     //  ident {"," ident}.
 	ArrayList<String> IDList() {
         ArrayList<String> ids = new ArrayList<String>();
-        if (la.kind != ident) {
+        if (la.kind != Token.ident) {
             Sync("invalid identifier");
         }
         else{
-            Expect(ident);
+            Expect(Token.ident);
             ids.add(t.val);
-            while (la.kind == comma) {
+            while (la.kind == Token.comma) {
                 Get();
-                Expect(ident);
+                Expect(Token.ident);
                 ids.add(t.val);
             }
         }
@@ -451,21 +360,21 @@ public class Parser {
     //Inheritances =
     //  "inherits" ident {"," ident}.
 	void Inheritances() { //TODO
-		Expect(inherits_);
-		Expect(ident);
-		while (la.kind == comma) {
+		Expect(Token.inherits_);
+		Expect(Token.ident);
+		while (la.kind == Token.comma) {
 			Get();
-			Expect(ident);
+			Expect(Token.ident);
 		}
 	}
 
     //EnvironmentDecs =
     //    "observes" {EnvDec ";"}.
 	void EnvironmentDecs() {
-		Expect(observes_);
+		Expect(Token.observes_);
 		while (StartOf(2)) {
 			EnvDec();
-			Expect(semicolon);
+			Expect(Token.semicolon);
 		}
 	}
 
@@ -473,10 +382,10 @@ public class Parser {
     //  StateDec ";" {StateDec ";"}.
 	void StateDecs() {
         StateDec();
-        Expect(semicolon);
-        while (la.kind == var_) {
+        Expect(Token.semicolon);
+        while (la.kind == Token.var_) {
             StateDec();
-            Expect(semicolon);
+            Expect(Token.semicolon);
         }
 	}
 
@@ -484,10 +393,10 @@ public class Parser {
     //    ActionDec ";" {ActionDec ";"}.
 	void ActionDecs() {
 		ActionDec();
-		Expect(semicolon);
-		while (la.kind == action_) {
+		Expect(Token.semicolon);
+		while (la.kind == Token.action_) {
 			ActionDec();
-			Expect(semicolon);
+			Expect(Token.semicolon);
 		}
 	}
 
@@ -506,27 +415,28 @@ public class Parser {
         if (!StartOf(3)) {
             Sync("invalid start of statement");
         } else {
+            Builder.statementStart();
             switch (la.kind) {
-                case ident: {
+                case Token.ident: {
                     Obj obj = Designator();
                     Operand op = new Operand(obj);
-                    if (la.kind == assign) {
+                    if (la.kind == Token.assign) {
                         obj.initialized = true;
                         Get();
                         int type = Exp();
                         Struct stype = new Struct(type); //create the struct to check if it is assignable
                         if(type == Struct.none_)    //if the expression is an invalid factor
-                            while(la.kind != semicolon && la.kind != eof) Get();
+                            while(la.kind != Token.semicolon && la.kind != Token.eof) Get();
                         else if(op.type != null) {  //if the designator is undeclared
                             if(!stype.assignableTo(op.type))
                                 SemErr("Incompatible types: " + Struct.values[type] + " to " + Struct.values[op.type.kind]);
                         }
                         Builder.assign(op);
-                    } else if (la.kind == lpar) {
+                    } else if (la.kind == Token.lpar) {
                         Get();
 
                         int nPars = 0;
-                        if (la.kind == ident) {
+                        if (la.kind == Token.ident) {
                             ArrayList<String> ids = IDList();
                             nPars = ids.size();
                             if(nPars == op.obj.nPars){     //if the action call has the same amount of param
@@ -549,46 +459,46 @@ public class Parser {
                             SemErr("Invalid amount of parameters");
                         }
 
-                        Expect(rpar);
+                        Expect(Token.rpar);
                     } else SynErr(74);
-                    Expect(semicolon);
+                    Expect(Token.semicolon);
                     break;
                 }
-                case join_: case quit_: case suspend_: case resume_: {
+                case Token.join_: case Token.quit_: case Token.suspend_: case Token.resume_: {
                     CasteEvent();
-                    Expect(semicolon);
+                    Expect(Token.semicolon);
                     break;
                 }
-                case create_: case destroy_: {
+                case Token.create_: case Token.destroy_: {
                     AgentEvent();
-                    Expect(semicolon);
+                    Expect(Token.semicolon);
                     break;
                 }
-                case begin_: {
+                case Token.begin_: {
                     Block();
                     break;
                 }
-                case loop_: case while_: case repeat_: case for_: {
+                case Token.loop_: case Token.while_: case Token.repeat_: case Token.for_: {
                     LoopStatement();
                     break;
                 }
-                case if_: {
+                case Token.if_: {
                     IfStatement();
                     break;
                 }
-                case case_: {
+                case Token.case_: {
                     CaseStatement();
                     break;
                 }
-                case with_: {
+                case Token.with_: {
                     WithStatement();
                     break;
                 }
-                case forall_: {
+                case Token.forall_: {
                     ForAllStatement();
                     break;
                 }
-                case when_: {
+                case Token.when_: {
                     WhenStatement();
                     break;
                 }
@@ -600,24 +510,24 @@ public class Parser {
     //Block =
     //  "begin" { Statement } "end".
     void Block() {
-        Expect(begin_);
+        Expect(Token.begin_);
         STab.openScope();
         while(StartOf(3)) {
             Statement();
         }
-        Expect(end_);
+        Expect(Token.end_);
         STab.closeScope();
     }
 
     //StateDec =
     //    "var" IDList ":" TypeExp [":=" ident].
 	void StateDec() {
-        Expect(var_);
+        Expect(Token.var_);
         ArrayList<String> ids = IDList();
-        if (la.kind != colon) {
+        if (la.kind != Token.colon) {
             Sync("type expected");
         } else {
-            Expect(colon);
+            Expect(Token.colon);
 
             Struct type = TypeExp();
             if (type == null) {
@@ -627,9 +537,9 @@ public class Parser {
                     Obj obj = STab.insert(Obj.state_, id, type);
                     Builder.add(obj);
                 }
-                if (la.kind == assign) {
+                if (la.kind == Token.assign) {
                     Get();
-                    Expect(ident);
+                    Expect(Token.ident);
                 }
             }
         }
@@ -641,13 +551,13 @@ public class Parser {
     //    | "var" IDList "in" ID [":=" AgentID]
     //    | "set" IDList "in" ID [":=" AgentSetEnum].
 	void EnvDec() {
-		if (la.kind == ident) {
+		if (la.kind == Token.ident) {
 			Get();
-		} else if (la.kind == all_) {
+		} else if (la.kind == Token.all_) {
 			Get();
-            Expect(ident);
+            Expect(Token.ident);
             String ident = t.val;
-			Expect(in_);
+			Expect(Token.in_);
 			String id = ID();
             Builder.add(id);    //add the value to the constants object file
             Obj objID = STab.find(id);
@@ -666,10 +576,10 @@ public class Parser {
                 Obj objIdent = STab.insert(Obj.environment_, ident, struct);
                 Builder.add(objIdent);
             }
-		} else if (la.kind == var_) {
+		} else if (la.kind == Token.var_) {
 			Get();
             ArrayList<String> ids = IDList();
-			Expect(in_);
+			Expect(Token.in_);
             String id = ID();
             Builder.add(id);    //add the value to the constants object file
             Obj objID = STab.find(id);
@@ -698,16 +608,16 @@ public class Parser {
                     Builder.observe(op);
                 }
             }
-			if (la.kind == assign) {
+			if (la.kind == Token.assign) {
 				Get();
 				AgentID();
 			}
-		} else if (la.kind == set_) {
+		} else if (la.kind == Token.set_) {
 			Get();
             IDList();
-			Expect(in_);
+			Expect(Token.in_);
 			ID();
-			if (la.kind == assign) {
+			if (la.kind == Token.assign) {
 				Get();
 				AgentSetEnum();
 			}
@@ -717,7 +627,7 @@ public class Parser {
     //AgentID	=
     //  ident "in" ID.
 	void AgentID() { //TODO ex : var mon in Monitor := x in Monitor;    why repeat "in Monitor" with the x ?
-		Expect(ident);
+		Expect(Token.ident);
 		Expect(25);
 		ID();
 	}
@@ -727,38 +637,38 @@ public class Parser {
     //    ident {"," ident}
     //  "}".
 	void AgentSetEnum() {
-		Expect(lbrace);
-		Expect(ident);
-		while (la.kind == comma) {
+		Expect(Token.lbrace);
+		Expect(Token.ident);
+		while (la.kind == Token.comma) {
 			Get();
-			Expect(ident);
+			Expect(Token.ident);
 		}
-		Expect(rbrace);
+		Expect(Token.rbrace);
 	}
 
     //LocalDecs =
     //  LocalDec ";" {LocalDec ";"}.
     void LocalDecs() {
         LocalDec();
-        Expect(semicolon);
-        while (la.kind == var_) {
+        Expect(Token.semicolon);
+        while (la.kind == Token.var_) {
             LocalDec();
-            Expect(semicolon);
+            Expect(Token.semicolon);
         }
     }
 
     //LocalDec =
     //  "var" IDList ":" TypeExp [":=" ident].
 	void LocalDec() {
-		Expect(var_);
+		Expect(Token.var_);
 		ArrayList<String> ids = IDList();
-		Expect(colon);
+		Expect(Token.colon);
 		Struct type = TypeExp();
         for(String id : ids)
             STab.insert(Obj.var_, id, type);
-		if (la.kind == assign) {
+		if (la.kind == Token.assign) {
 			Get();
-			Expect(ident);
+			Expect(Token.ident);
 		}
 	}
 
@@ -767,21 +677,21 @@ public class Parser {
     //    [Statement]
     //    [Impact].
 	void ActionDec() {
-		Expect(action_);
+		Expect(Token.action_);
         ArrayList<String> ids = IDList();
         Obj[] objs = new Obj[ids.size()];
         int nParam = 0;
         for(int i = 0; i < ids.size(); i++) //because IDList
             objs[i] = STab.insert(Obj.action_, ids.get(i), new Struct(Struct.none_));
-		Expect(lpar);
+		Expect(Token.lpar);
         STab.openScope();
-		if (la.kind == ident) {
+		if (la.kind == Token.ident) {
 			nParam = ParameterList();
 		}
         for(int i = 0; i < objs.length; i++)
             objs[i].nPars = nParam;
 
-		Expect(rpar);
+		Expect(Token.rpar);
 		if (StartOf(3)) {
 			Statement();
 		}
@@ -789,7 +699,7 @@ public class Parser {
             objs[i].locals = STab.curScope.locals;
             Builder.add(objs[i]);
         }
-		if (la.kind == affect_) {
+		if (la.kind == Token.affect_) {
 			Impact();
 		}
         STab.closeScope();
@@ -800,7 +710,7 @@ public class Parser {
 	int ParameterList() {
         int nParam = 0;
 		nParam += Parameter();
-		while (la.kind == comma) {
+		while (la.kind == Token.comma) {
 			Get();
 			nParam += Parameter();
 		}
@@ -810,9 +720,9 @@ public class Parser {
     //Impact =
     //  "affect" ID { "," ID }.
 	void Impact() {
-		Expect(affect_);
+		Expect(Token.affect_);
 		ID();
-		while (la.kind == comma) {
+		while (la.kind == Token.comma) {
 			Get();
 			ID();
 		}
@@ -823,19 +733,19 @@ public class Parser {
 	int Parameter() {
         int nParam = 0;
         ArrayList<String> ids = new ArrayList<String>();
-		Expect(ident);
+		Expect(Token.ident);
         ids.add(t.val);
         nParam++;
-		while (la.kind == comma) {
+		while (la.kind == Token.comma) {
 			Get();
-			Expect(ident);
+			Expect(Token.ident);
             ids.add(t.val);
             nParam++;
 		}
-        if (la.kind != colon) {
+        if (la.kind != Token.colon) {
             Sync("type expected");
         } else {
-            Expect(colon);
+            Expect(Token.colon);
             Struct type = TypeExp();
             for(String id : ids) {
                 Obj obj = STab.insert(Obj.var_, id, type);
@@ -849,16 +759,16 @@ public class Parser {
     //  ident { "." ident } ["[" Exp "]"].<
 	Obj Designator() {
         Operand op;
-		Expect(ident);
+		Expect(Token.ident);
         Obj obj = STab.find(t.val);
-		while (la.kind == period) {
+		while (la.kind == Token.period) {
 			Get();
-			Expect(ident);
+			Expect(Token.ident);
 		}
-        if (la.kind == lbrack) {
+        if (la.kind == Token.lbrack) {
             Get();
             Exp();
-            Expect(rbrack);
+            Expect(Token.rbrack);
         }
         return obj;
 	}
@@ -867,7 +777,7 @@ public class Parser {
     //    Term {Addop Term}.
 	int Exp() {
 		int type = Term();
-		while (la.kind == plus || la.kind == minus || la.kind == concat) {
+		while (la.kind == Token.plus || la.kind == Token.minus || la.kind == Token.concat) {
 			String insVal = Addop();
 			int type2 = Term();
             if((type == Struct.integer_ && type2 == Struct.integer_) ||
@@ -880,7 +790,7 @@ public class Parser {
             }
             else {
                 SemErr("Incompatible types: " + Struct.values[type] + " and " + Struct.values[type2]);
-                while(la.kind != semicolon && la.kind != eof) Get();
+                while(la.kind != Token.semicolon && la.kind != Token.eof) Get();
             }
 		}
         return type;
@@ -888,24 +798,44 @@ public class Parser {
 
     //Conditions =
     //  Condition {Boolop Condition}.
-    void Conditions() {
-        int rel = Condition();
-        while(la.kind == and_ || la.kind == or_) {
+    //return addresses of jumps which need to be fixed later
+    ArrayList<Integer> Conditions() {
+        int[] res = Condition();
+        ArrayList<Integer> addresses = new ArrayList<Integer>();
+        while(la.kind == Token.and_ || la.kind == Token.or_) {
+            res[2] = la.kind;
+            int address = Builder.condition(res);
+            addresses.add(address);
+            if(la.kind == Token.or_)
+                Builder.JumpsIn.add(new Integer(address));  //with a "or" boolean operator, we will require a jump instruction in the statement
             Boolop();
-            Condition();
+            res = Condition();
         }
+        addresses.add(Builder.condition(res));
+        return addresses;
     }
 
     //Condition =
     //  Exp [Relop Exp].
-    int Condition() {
-        Exp();
-        if(la.kind == neq || la.kind == gtr || la.kind == geq
-                || la.kind == lss || la.kind == leq || la.kind == eqlSign) {
+    int[] Condition() { //return the the type of expression + relation operator
+        int[] res = new int[3]; //Builder.condition expect 3 information: 0- variable type, 1- relation operator, 2- boolean operator
+        int type = Exp();
+        res[0] = type;
+        if(la.kind == Token.neq || la.kind == Token.gtr || la.kind == Token.geq
+                || la.kind == Token.lss || la.kind == Token.leq || la.kind == Token.eqlSign) {
+            res[1] = la.kind;
             Relop();
-            Exp();
+            int type2 = Exp();
+            if((type == Struct.integer_ && type2 == Struct.integer_) || //TODO: Only integer and real are treated here for condition
+                (type == Struct.real_ && type2 == Struct.real_)) {
+
+            }
+            else{
+                Sync("Not comparable types: " + Struct.values[type] + " and " + Struct.values[type2]);
+            }
         }
-        return la.kind;
+        res[2] = 0; //by default, there is no boolean operator
+        return res;
     }
 
     //CasteEvent =
@@ -914,21 +844,21 @@ public class Parser {
     //  | "suspend" ID
     //  | "resume" ID.
 	void CasteEvent() {
-		if (la.kind == join_) {
+		if (la.kind == Token.join_) {
 			Get();
 			ID();
-			Expect(lpar);
-			if (la.kind == ident) {
+			Expect(Token.lpar);
+			if (la.kind == Token.ident) {
 				Get();
 			}
-			Expect(rpar);
-		} else if (la.kind == quit_) {
+			Expect(Token.rpar);
+		} else if (la.kind == Token.quit_) {
 			Get();
 			ID();
-		} else if (la.kind == suspend_) {
+		} else if (la.kind == Token.suspend_) {
 			Get();
 			ID();
-		} else if (la.kind == resume_) {
+		} else if (la.kind == Token.resume_) {
 			Get();
 			ID();
 		} else SynErr(77);
@@ -938,22 +868,22 @@ public class Parser {
     //  "create" ident "of" ID "("[ident]")" [url]
     //  | "destroy" ident.
 	void AgentEvent() { //TODO is it like "new object()"
-		if (la.kind == create_) {
+		if (la.kind == Token.create_) {
 			Get();
-			Expect(ident);
-			Expect(of_);
+			Expect(Token.ident);
+			Expect(Token.of_);
 			ID();
-			Expect(lpar);
-			if (la.kind == ident) {
+			Expect(Token.lpar);
+			if (la.kind == Token.ident) {
 				Get();
 			}
-			Expect(rpar);
-			if (la.kind == atsign) {
+			Expect(Token.rpar);
+			if (la.kind == Token.atsign) {
 				Get();
 			}
-		} else if (la.kind == destroy_) {
+		} else if (la.kind == Token.destroy_) {
 			Get();
-			Expect(ident);
+			Expect(Token.ident);
 		} else SynErr(78);
 	}
 
@@ -963,13 +893,13 @@ public class Parser {
     //  | RepeatLoop
     //  | Loop.
 	void LoopStatement() {
-		if (la.kind == for_) {
+		if (la.kind == Token.for_) {
 			ForLoop();
-		} else if (la.kind == while_) {
+		} else if (la.kind == Token.while_) {
 			WhileLoop();
-		} else if (la.kind == repeat_) {
+		} else if (la.kind == Token.repeat_) {
 			RepeatLoop();
-		} else if (la.kind == loop_) {
+		} else if (la.kind == Token.loop_) {
 			Loop();
 		} else SynErr(79);
 	}
@@ -980,21 +910,23 @@ public class Parser {
     //    ["else" Statement]
     //    "end".
 	void IfStatement() {
-		Expect(if_);
-        Conditions();
-		Expect(then_);
+		Expect(Token.if_);
+        Builder.statementType = Builder.if_statement; //the conditions has to generate the 'if' instructions (because Conditions is also used in other statement type)
+        ArrayList<Integer> addresses = Conditions();
+		Expect(Token.then_);
 		Statement();
-		while (la.kind == elseif_) {
+        Builder.fixup(addresses);
+		while (la.kind == Token.elseif_) {
 			Get();
             Conditions();
-			Expect(then_);
+			Expect(Token.then_);
 			Statement();
 		}
-		if (la.kind == else_) {
+		if (la.kind == Token.else_) {
 			Get();
 			Statement();
 		}
-		Expect(end_);
+		Expect(Token.end_);
 	}
 
     //CaseStatement =
@@ -1003,29 +935,29 @@ public class Parser {
     //  ["else" Statement]
     //  "end".
 	void CaseStatement() {
-		Expect(case_);
+		Expect(Token.case_);
 		Exp();
-		Expect(of_);
+		Expect(Token.of_);
 		while (startOfExp.get(la.kind)) {
 			Exp();
-			Expect(effect);
+			Expect(Token.effect);
 			Statement();
 		}
-		if (la.kind == else_) {
+		if (la.kind == Token.else_) {
 			Get();
 			Statement();
 		}
-		Expect(end_);
+		Expect(Token.end_);
 	}
 
     //WithStatement =
     //  "with" Exp "do" Statement "end".
 	void WithStatement() {
-		Expect(with_);
+		Expect(Token.with_);
 		Exp();
-		Expect(do_);
+		Expect(Token.do_);
 		Statement();
-		Expect(end_);
+		Expect(Token.end_);
 	}
 
     //ForAllStatement =
@@ -1033,25 +965,25 @@ public class Parser {
     //  Statement
     //  "end".
 	void ForAllStatement() {
-		Expect(forall_);
-		Expect(ident);
-		Expect(in_);
+		Expect(Token.forall_);
+		Expect(Token.ident);
+		Expect(Token.in_);
 		Exp();
-		Expect(do_);
+		Expect(Token.do_);
 		Statement();
-		Expect(end_);
+		Expect(Token.end_);
 	}
 
     //WhenStatement =
     //  "when" {Scenario "->" Statement} "end".
 	void WhenStatement() {
-		Expect(when_);
-		while (la.kind == ident || la.kind == exist_ || la.kind == all_) {
+		Expect(Token.when_);
+		while (la.kind == Token.ident || la.kind == Token.exist_ || la.kind == Token.all_) {
 			Scenario();
-			Expect(effect);
+			Expect(Token.effect);
 			Statement();
 		}
-		Expect(end_);
+		Expect(Token.end_);
 	}
 
     //ForLoop =
@@ -1059,47 +991,47 @@ public class Parser {
     //  Statement
     //  "end".
 	void ForLoop() {
-		Expect(for_);
-		Expect(ident);
-		Expect(assign);
+		Expect(Token.for_);
+		Expect(Token.ident);
+		Expect(Token.assign);
 		Exp();
-		Expect(to_);
+		Expect(Token.to_);
 		Exp();
-		if (la.kind == by_) {
+		if (la.kind == Token.by_) {
 			Get();
 			Exp();
 		}
-		Expect(do_);
+		Expect(Token.do_);
 		Statement();
-		Expect(end_);
+		Expect(Token.end_);
 	}
 
     //WhileLoop =
     //  "while" Conditions "do" Statement "end".
 	void WhileLoop() {
-		Expect(while_);
+		Expect(Token.while_);
         Conditions();
-		Expect(do_);
+		Expect(Token.do_);
 		Statement();
-		Expect(end_);
+		Expect(Token.end_);
 	}
 
     //RepeatLoop =
     //  "repeat" Statement "until" Conditions "end".
 	void RepeatLoop() {
-		Expect(repeat_);
+		Expect(Token.repeat_);
 		Statement();
-		Expect(until_);
+		Expect(Token.until_);
         Conditions();
-		Expect(end_);
+		Expect(Token.end_);
 	}
 
     //Loop =
     //  "loop" Statement "end".
 	void Loop() {
-		Expect(loop_);
+		Expect(Token.loop_);
 		Statement();
-		Expect(end_);
+		Expect(Token.end_);
 	}
 
     //Scenario =
@@ -1108,35 +1040,35 @@ public class Parser {
     //  | "all" ident "in" ID ":" ActionPattern)
     //  [("and"|"or"|"xor") Scenario].
 	void Scenario() {
-		if (la.kind == ident) {
+		if (la.kind == Token.ident) {
 			Get();
-			if (la.kind == in_) {
+			if (la.kind == Token.in_) {
 				Get();
 				ID();
 			}
-			Expect(colon);
+			Expect(Token.colon);
 			ActionPattern();
-		} else if (la.kind == exist_) {
+		} else if (la.kind == Token.exist_) {
 			Get();
-			Expect(ident);
+			Expect(Token.ident);
             Obj obj = STab.insert(Obj.var_, t.val, new Struct(Struct.none_)); //TODO set right type
-            Expect(in_);
+            Expect(Token.in_);
 			ID();
-			Expect(colon);
+			Expect(Token.colon);
 			ActionPattern();
 		} else if (la.kind == 24) {
 			Get();
-			Expect(ident);
+			Expect(Token.ident);
             Obj obj = STab.insert(Obj.var_, t.val, new Struct(Struct.none_)); //TODO set right type
-            Expect(in_);
+            Expect(Token.in_);
             ID();
-            Expect(colon);
+            Expect(Token.colon);
 			ActionPattern();
 		} else SynErr(80);
-		if (la.kind == and_ || la.kind == or_ || la.kind == xor_) {
-			if (la.kind == and_) {
+		if (la.kind == Token.and_ || la.kind == Token.or_ || la.kind == Token.xor_) {
+			if (la.kind == Token.and_) {
 				Get();
-			} else if (la.kind == or_) {
+			} else if (la.kind == Token.or_) {
 				Get();
 			} else {
 				Get();
@@ -1148,16 +1080,16 @@ public class Parser {
     //ActionPattern =
     //  ident "("[PatternPara {"," PatternPara}]")".
 	void ActionPattern() {
-		Expect(ident);
-		Expect(lpar);
-		if (la.kind == ident || la.kind == number || la.kind == lpar) {
+		Expect(Token.ident);
+		Expect(Token.lpar);
+		if (la.kind == Token.ident || la.kind == Token.number || la.kind == Token.lpar) {
 			PatternPara();
-			while (la.kind == comma) {
+			while (la.kind == Token.comma) {
 				Get();
 				PatternPara();
 			}
 		}
-		Expect(rpar);
+		Expect(Token.rpar);
 	}
 
     //PatternPara =
@@ -1171,7 +1103,7 @@ public class Parser {
 	int Term() {
         int type = Struct.none_;
 		type = Factor();
-		while (la.kind == times || la.kind == slash || la.kind == rem) {
+		while (la.kind == Token.times || la.kind == Token.slash || la.kind == Token.rem) {
 			String insVal = Mulop();
 
 			int type2 = Factor();
@@ -1184,7 +1116,7 @@ public class Parser {
             }
             else {
                 SemErr("Incompatible types: " + Struct.values[type] + " and " + Struct.values[type2]);
-                while(la.kind != semicolon && la.kind != eof) Get();
+                while(la.kind != Token.semicolon && la.kind != Token.eof) Get();
             }
 
 		}
@@ -1195,14 +1127,14 @@ public class Parser {
     //  "+" | "-" | "++".
 	String Addop() {
         String insVal = "";
-		if (la.kind == plus) {
+		if (la.kind == Token.plus) {
 			Get();
             insVal = Instruction.add_;
-		} else if (la.kind == minus) {
+		} else if (la.kind == Token.minus) {
 			Get();
             insVal = Instruction.sub_;
 		}
-        else if (la.kind == concat) {
+        else if (la.kind == Token.concat) {
             Get();
         } else SynErr(81);
         return insVal;
@@ -1212,13 +1144,13 @@ public class Parser {
     //  "*" | "/" | "%".
 	String Mulop() {
         String insVal = "";
-		if (la.kind == times) {
+		if (la.kind == Token.times) {
 			Get();
             insVal = Instruction.mul_;
-		} else if (la.kind == slash) {
+		} else if (la.kind == Token.slash) {
 			Get();
             insVal = Instruction.div_;
-		} else if (la.kind == rem) {
+		} else if (la.kind == Token.rem) {
 			Get();
 		} else SynErr(82);
         return insVal;
@@ -1227,15 +1159,15 @@ public class Parser {
     //Relop =
     //  "=" | "!=" | ">" | ">=" | "<" | "<=".
     void Relop() {
-        if(la.kind == neq || la.kind == gtr || la.kind == geq
-                || la.kind == lss || la.kind == leq || la.kind == eqlSign)
+        if(la.kind == Token.neq || la.kind == Token.gtr || la.kind == Token.geq
+                || la.kind == Token.lss || la.kind == Token.leq || la.kind == Token.eqlSign)
             Get();
     }
 
     //Boolop =
     //  "and" | "or".
     void Boolop() {
-        if(la.kind == and_ || la.kind == or_)
+        if(la.kind == Token.and_ || la.kind == Token.or_)
             Get();
     }
 
@@ -1247,7 +1179,7 @@ public class Parser {
     //  | stringVal.
 	int Factor() {
         int type = Struct.none_;
-		if (la.kind == number) {
+		if (la.kind == Token.number) {
 			Get();
             if(!t.val.contains(".")) {
                 type = Struct.integer_;
@@ -1260,8 +1192,8 @@ public class Parser {
                 Operand op = new Operand(number);
                 Builder.load(op);
             }
-		} else if (la.kind == ident || la.kind == not_) {
-            if(la.kind == not_) Get();
+		} else if (la.kind == Token.ident || la.kind == Token.not_) {
+            if(la.kind == Token.not_) Get();
 			Obj obj = Designator();
             if(!obj.initialized)
                 SemErr("variable \"" + obj.name + "\" not initialized");
@@ -1269,16 +1201,16 @@ public class Parser {
             if(op.type != null)
                 type = op.type.kind;
             Builder.load(op);
-		} else if (la.kind == lpar) {
+		} else if (la.kind == Token.lpar) {
 			Get();
 			type = Exp();
-			Expect(rpar);
-		} else if (la.kind == charVal) {
+			Expect(Token.rpar);
+		} else if (la.kind == Token.charVal) {
             type = Struct.char_;
             Get();
             Builder.addCons(t.val);
             Builder.loadIns(t.val);
-        }  else if (la.kind == stringVal) {
+        }  else if (la.kind == Token.stringVal) {
             type = Struct.string_;
             Get();
             Builder.addCons(t.val);
@@ -1305,14 +1237,14 @@ public class Parser {
         //init "start of" bitsets
         BitSet s;
         s = new BitSet(64); startOfExp = s;
-        s.set(number); s.set(not_); s.set(ident); s.set(lpar); s.set(charVal); s.set(stringVal);
+        s.set(Token.number); s.set(Token.not_); s.set(Token.ident); s.set(Token.lpar); s.set(Token.charVal); s.set(Token.stringVal);
 
         //for the error synchronization, those are the token for the recovery
         s = new BitSet(64); syncStat = s;
-        s.set(type_); s.set(caste_); s.set(init_); s.set(body_); s.set(observes_);
-        s.set(var_); s.set(state_); s.set(action_); s.set(affect_); s.set(begin_); s.set(join_); s.set(quit_); s.set(suspend_); s.set(resume_);
-        s.set(create_); s.set(destroy_); s.set(loop_); s.set(while_); s.set(do_); s.set(repeat_); s.set(until_); s.set(for_); s.set(to_); s.set(by_);
-        s.set(forall_); s.set(if_); s.set(then_); s.set(elseif_); s.set(else_); s.set(case_); s.set(with_); s.set(when_); s.set(exist_);
+        s.set(Token.type_); s.set(Token.caste_); s.set(Token.init_); s.set(Token.body_); s.set(Token.observes_);
+        s.set(Token.var_); s.set(Token.state_); s.set(Token.action_); s.set(Token.affect_); s.set(Token.begin_); s.set(Token.join_); s.set(Token.quit_); s.set(Token.suspend_); s.set(Token.resume_);
+        s.set(Token.create_); s.set(Token.destroy_); s.set(Token.loop_); s.set(Token.while_); s.set(Token.do_); s.set(Token.repeat_); s.set(Token.until_); s.set(Token.for_); s.set(Token.to_); s.set(Token.by_);
+        s.set(Token.forall_); s.set(Token.if_); s.set(Token.then_); s.set(Token.elseif_); s.set(Token.else_); s.set(Token.case_); s.set(Token.with_); s.set(Token.when_); s.set(Token.exist_);
     }
 
     //for StartOf, created by Coco/R

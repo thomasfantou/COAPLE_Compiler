@@ -7,15 +7,6 @@ import java.io.RandomAccessFile;
 import java.util.Map;
 import java.util.HashMap;
 
-class Token {
-	public int kind;    // token kind
-	public int pos;     // token position in bytes in the source text (starting at 0)
-	public int charPos; // token position in characters in the source text (starting at 0)
-	public int col;     // token column (starting at 1)
-	public int line;    // token line (starting at 1)
-	public String val;  // token value
-	public Token next;  // ML 2005-03-11 Peek tokens are kept in linked list
-}
 
 //-----------------------------------------------------------------------------------
 // Buffer
@@ -275,178 +266,87 @@ public class Scanner {
 	char[] tval = new char[16]; // token text used in NextToken(), dynamically enlarged
 	int tlen;          // length of current token
 
-    private static final int  // token and char codes
-        none        = 0,
-        ident       = 1,
-        identChar   = 201,
-        number      = 2,
-        digit       = 202,
-        decimal     = 205,
-        atsign      = 3,
-        charVal     = 203,
-        stringVal   = 204,
-        type_		= 4,
-        integer_	= 6,
-        real_	    = 7,
-        bool_		= 8,
-        char_		= 9,
-        string_		= 10,
-        record_		= 11,
-        of_			= 12,
-        end_		= 15,
-        list_		= 16,
-        enumerate_	= 17,
-        caste_		= 19,
-        init_		= 20,
-        body_		= 21,
-        inherits_	= 22,
-        observes_	= 23,
-        all_		= 24,
-        in_			= 25,
-        var_		= 26,
-        set_		= 28,
-        state_		= 31,
-        action_		= 32,
-        affect_		= 35,
-        begin_		= 36,
-        join_		= 37,
-        quit_		= 38,
-        suspend_	= 39,
-        resume_		= 40,
-        create_		= 41,
-        destroy_	= 42,
-        loop_		= 43,
-        while_		= 44,
-        do_			= 45,
-        repeat_		= 46,
-        until_		= 47,
-        for_		= 48,
-        to_			= 49,
-        by_			= 50,
-        forall_		= 51,
-        if_			= 52,
-        then_		= 53,
-        elseif_		= 54,
-        else_		= 55,
-        case_		= 56,
-        with_		= 58,
-        when_		= 59,
-        exist_		= 60,
-        and_		= 61,
-        or_			= 62,
-        xor_		= 63,
-        not_        = 64,
-        plus        = 100,
-        minus       = 101,
-        times       = 102,
-        slash       = 103,
-        rem         = 104,
-        eqlSign     = 105,
-        neq         = 106,
-        lss         = 107,
-        leq         = 108,
-        gtr         = 109,
-        geq         = 110,
-        assign      = 111,
-        semicolon   = 112,
-        colon       = 113,
-        comma       = 114,
-        period      = 115,
-        lpar        = 116,
-        rpar        = 117,
-        lbrack      = 118,
-        rbrack      = 119,
-        lbrace      = 120,
-        rbrace      = 121,
-        aslash      = 122,
-        effect      = 123,
-        apostr      = 124,
-        quote       = 125,
-        excl        = 126,
-        concat      = 127,
-        eof         = 128;
-
 	static {
 		start = new StartStates();
 		literals = new HashMap();
-		for (int i = 65; i <= 90; ++i) start.set(i, identChar);
-		for (int i = 97; i <= 122; ++i) start.set(i, identChar);
-		for (int i = 48; i <= 57; ++i) start.set(i, digit);
-		for (int i = 64; i <= 64; ++i) start.set(i, atsign);
-		start.set(44, comma);       // ,
-		start.set(58, colon);       // :
-		start.set(59, semicolon);   // ;
-		start.set(61, eqlSign);     // =
-		start.set(123, lbrace);     // {
-		start.set(125, rbrace);     // }
-		start.set(40, lpar);        // (
-		start.set(41, rpar);        // )
-        start.set(91, lbrack);      // [
-        start.set(93, rbrack);      // ]
-		start.set(45, minus);       // -
-		start.set(43, plus);        // +
-		start.set(42, times);       // *
-		start.set(47, slash);       // /
-		start.set(37, rem);         // %
-        start.set(46, period);      // .
-        start.set(39, apostr);      // '
-        start.set(34, quote);       // "
-        start.set(95, identChar);   // _
-        start.set(33, excl);        // !
-        start.set(60, lss);         // <
-        start.set(62, gtr);         // >
+		for (int i = 65; i <= 90; ++i) start.set(i, Token.identChar);
+		for (int i = 97; i <= 122; ++i) start.set(i, Token.identChar);
+		for (int i = 48; i <= 57; ++i) start.set(i, Token.digit);
+		for (int i = 64; i <= 64; ++i) start.set(i, Token.atsign);
+		start.set(44, Token.comma);       // ,
+		start.set(58, Token.colon);       // :
+		start.set(59, Token.semicolon);   // ;
+		start.set(61, Token.eqlSign);     // =
+		start.set(123, Token.lbrace);     // {
+		start.set(125, Token.rbrace);     // }
+		start.set(40, Token.lpar);        // (
+		start.set(41, Token.rpar);        // )
+        start.set(91, Token.lbrack);      // [
+        start.set(93, Token.rbrack);      // ]
+		start.set(45, Token.minus);       // -
+		start.set(43, Token.plus);        // +
+		start.set(42, Token.times);       // *
+		start.set(47, Token.slash);       // /
+		start.set(37, Token.rem);         // %
+        start.set(46, Token.period);      // .
+        start.set(39, Token.apostr);      // '
+        start.set(34, Token.quote);       // "
+        start.set(95, Token.identChar);   // _
+        start.set(33, Token.excl);        // !
+        start.set(60, Token.lss);         // <
+        start.set(62, Token.gtr);         // >
         start.set(Buffer.EOF, -1);
-		literals.put("type", new Integer(type_));
-		literals.put("integer", new Integer(integer_));
-		literals.put("real", new Integer(real_));
-		literals.put("bool", new Integer(bool_));
-		literals.put("char", new Integer(char_));
-		literals.put("string", new Integer(string_));
-		literals.put("record", new Integer(record_));
-		literals.put("of", new Integer(of_));
-		literals.put("end", new Integer(end_));
-		literals.put("list", new Integer(list_));
-		literals.put("enumerate", new Integer(enumerate_));
-		literals.put("caste", new Integer(caste_));
-		literals.put("init", new Integer(init_));
-		literals.put("body", new Integer(body_));
-		literals.put("inherits", new Integer(inherits_));
-		literals.put("observes", new Integer(observes_));
-		literals.put("all", new Integer(all_));
-		literals.put("in", new Integer(in_));
-		literals.put("var", new Integer(var_));
-		literals.put("set", new Integer(set_));
-		literals.put("state", new Integer(state_));
-		literals.put("action", new Integer(action_));
-		literals.put("affect", new Integer(affect_));
-		literals.put("begin", new Integer(begin_));
-		literals.put("join", new Integer(join_));
-		literals.put("quit", new Integer(quit_));
-		literals.put("suspend", new Integer(suspend_));
-		literals.put("resume", new Integer(resume_));
-		literals.put("create", new Integer(create_));
-		literals.put("destroy", new Integer(destroy_));
-		literals.put("loop", new Integer(loop_));
-		literals.put("while", new Integer(while_));
-		literals.put("do", new Integer(do_));
-		literals.put("repeat", new Integer(repeat_));
-		literals.put("until", new Integer(until_));
-		literals.put("for", new Integer(for_));
-		literals.put("to", new Integer(to_));
-		literals.put("by", new Integer(by_));
-		literals.put("forall", new Integer(forall_));
-		literals.put("if", new Integer(if_));
-		literals.put("then", new Integer(then_));
-		literals.put("elseif", new Integer(elseif_));
-		literals.put("else", new Integer(else_));
-		literals.put("case", new Integer(case_));
-		literals.put("with", new Integer(with_));
-		literals.put("when", new Integer(when_));
-		literals.put("exist", new Integer(exist_));
-		literals.put("and", new Integer(and_));
-		literals.put("or", new Integer(or_));
-		literals.put("xor", new Integer(xor_));
-        literals.put("not", new Integer(not_));
+		literals.put("type", new Integer(Token.type_));
+		literals.put("integer", new Integer(Token.integer_));
+		literals.put("real", new Integer(Token.real_));
+		literals.put("bool", new Integer(Token.bool_));
+		literals.put("char", new Integer(Token.char_));
+		literals.put("string", new Integer(Token.string_));
+		literals.put("record", new Integer(Token.record_));
+		literals.put("of", new Integer(Token.of_));
+		literals.put("end", new Integer(Token.end_));
+		literals.put("list", new Integer(Token.list_));
+		literals.put("enumerate", new Integer(Token.enumerate_));
+		literals.put("caste", new Integer(Token.caste_));
+		literals.put("init", new Integer(Token.init_));
+		literals.put("body", new Integer(Token.body_));
+		literals.put("inherits", new Integer(Token.inherits_));
+		literals.put("observes", new Integer(Token.observes_));
+		literals.put("all", new Integer(Token.all_));
+		literals.put("in", new Integer(Token.in_));
+		literals.put("var", new Integer(Token.var_));
+		literals.put("set", new Integer(Token.set_));
+		literals.put("state", new Integer(Token.state_));
+		literals.put("action", new Integer(Token.action_));
+		literals.put("affect", new Integer(Token.affect_));
+		literals.put("begin", new Integer(Token.begin_));
+		literals.put("join", new Integer(Token.join_));
+		literals.put("quit", new Integer(Token.quit_));
+		literals.put("suspend", new Integer(Token.suspend_));
+		literals.put("resume", new Integer(Token.resume_));
+		literals.put("create", new Integer(Token.create_));
+		literals.put("destroy", new Integer(Token.destroy_));
+		literals.put("loop", new Integer(Token.loop_));
+		literals.put("while", new Integer(Token.while_));
+		literals.put("do", new Integer(Token.do_));
+		literals.put("repeat", new Integer(Token.repeat_));
+		literals.put("until", new Integer(Token.until_));
+		literals.put("for", new Integer(Token.for_));
+		literals.put("to", new Integer(Token.to_));
+		literals.put("by", new Integer(Token.by_));
+		literals.put("forall", new Integer(Token.forall_));
+		literals.put("if", new Integer(Token.if_));
+		literals.put("then", new Integer(Token.then_));
+		literals.put("elseif", new Integer(Token.elseif_));
+		literals.put("else", new Integer(Token.else_));
+		literals.put("case", new Integer(Token.case_));
+		literals.put("with", new Integer(Token.with_));
+		literals.put("when", new Integer(Token.when_));
+		literals.put("exist", new Integer(Token.exist_));
+		literals.put("and", new Integer(Token.and_));
+		literals.put("or", new Integer(Token.or_));
+		literals.put("xor", new Integer(Token.xor_));
+        literals.put("not", new Integer(Token.not_));
 
 	}
 	
@@ -580,105 +480,105 @@ public class Scanner {
             //t.kind = state;
 			switch (state) {
 				case -1: { t.kind = eofSym; break loop; } // NextCh already done
-				case none: {
+				case Token.none: {
 					if (recKind != noSym) {
 						tlen = recEnd - t.pos;
 						SetScannerBehindT();
 					}
 					t.kind = recKind; break loop;
 				} // NextCh already done
-				case identChar:
-					recEnd = pos; recKind = ident;
-                    if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); state = identChar; break;}
-					else {t.kind = ident; t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}
-				case digit:
-					recEnd = pos; recKind = number;
-                    if (ch == '.') {AddCh(); state = decimal; break;}
-					else if (ch >= '0' && ch <= '9') {AddCh(); state = digit; break;}
-					else {t.kind = number; break loop;}
-                case decimal:
-                    if (ch >= '0' && ch <= '9') {AddCh(); state = decimal; break;}
-                    else {t.kind = number; break loop;}
-				case atsign:
-					recEnd = pos; recKind = atsign;
-					if (ch == '/' || ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z') {AddCh(); state = atsign; break;}
-					else {t.kind = atsign; break loop;}
-				case comma:                                         // ,
-					{t.kind = comma; break loop;}
-				case semicolon:                                     // ;
-					{t.kind = semicolon; break loop;}
-				case eqlSign:                                       // =
-					{t.kind = eqlSign; break loop;}
-                case lpar:                                          // (
-                    {t.kind = lpar; break loop;}
-                case rpar:                                          // )
-                    {t.kind = rpar; break loop;}
-				case lbrack:                                        // [
-					{t.kind = lbrack; break loop;}
-				case rbrack:                                        // ]
-					{t.kind = rbrack; break loop;}
-				case lbrace:                                        // {
-					{t.kind = lbrace; break loop;}
-				case rbrace:                                        // }
-					{t.kind = rbrace; break loop;}
-				case plus:                                          // +
-                    recEnd = pos; recKind = plus;
-                    if (ch == '+') {AddCh(); state = concat; break;}
-                    else {t.kind = plus; break loop;}
-                case concat:                                        // ++
-                    {t.kind = concat; break loop;}
-				case times:                                         // *
-					{t.kind = times; break loop;}
-				case slash:                                         // /
-					{t.kind = slash; break loop;}
-				case rem:                                           // %
-					{t.kind = rem; break loop;}
-				case period:                                        // .
-					{t.kind = period; break loop;}
-                case lss:                                           // <
-                    recEnd = pos; recKind = lss;
-                    if (ch == '=') {AddCh(); state = leq; break;}
-                    else {t.kind = lss; break loop;}
-                case leq:                                           // <=
-                    {t.kind = leq; break loop;}
-                case gtr:                                           // >
-                    recEnd = pos; recKind = gtr;
-                    if (ch == '=') {AddCh(); state = geq; break;}
-                    else {t.kind = gtr; break loop;}
-                case geq:                                           // >=
-                    {t.kind = geq; break loop;}
-                case excl:                                          // !
-                    if (ch == '=') {AddCh(); state = neq; break; }
+				case Token.identChar:
+					recEnd = pos; recKind = Token.ident;
+                    if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); state = Token.identChar; break;}
+					else {t.kind = Token.ident; t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}
+				case Token.digit:
+					recEnd = pos; recKind = Token.number;
+                    if (ch == '.') {AddCh(); state = Token.decimal; break;}
+					else if (ch >= '0' && ch <= '9') {AddCh(); state = Token.digit; break;}
+					else {t.kind = Token.number; break loop;}
+                case Token.decimal:
+                    if (ch >= '0' && ch <= '9') {AddCh(); state = Token.decimal; break;}
+                    else {t.kind = Token.number; break loop;}
+				case Token.atsign:
+					recEnd = pos; recKind = Token.atsign;
+					if (ch == '/' || ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z') {AddCh(); state = Token.atsign; break;}
+					else {t.kind = Token.atsign; break loop;}
+				case Token.comma:                                         // ,
+					{t.kind = Token.comma; break loop;}
+				case Token.semicolon:                                     // ;
+					{t.kind = Token.semicolon; break loop;}
+				case Token.eqlSign:                                       // =
+					{t.kind = Token.eqlSign; break loop;}
+                case Token.lpar:                                          // (
+                    {t.kind = Token.lpar; break loop;}
+                case Token.rpar:                                          // )
+                    {t.kind = Token.rpar; break loop;}
+				case Token.lbrack:                                        // [
+					{t.kind = Token.lbrack; break loop;}
+				case Token.rbrack:                                        // ]
+					{t.kind = Token.rbrack; break loop;}
+				case Token.lbrace:                                        // {
+					{t.kind = Token.lbrace; break loop;}
+				case Token.rbrace:                                        // }
+					{t.kind =Token. rbrace; break loop;}
+				case Token.plus:                                          // +
+                    recEnd = pos; recKind = Token.plus;
+                    if (ch == '+') {AddCh(); state = Token.concat; break;}
+                    else {t.kind = Token.plus; break loop;}
+                case Token.concat:                                        // ++
+                    {t.kind = Token.concat; break loop;}
+				case Token.times:                                         // *
+					{t.kind = Token.times; break loop;}
+				case Token.slash:                                         // /
+					{t.kind = Token.slash; break loop;}
+				case Token.rem:                                           // %
+					{t.kind = Token.rem; break loop;}
+				case Token.period:                                        // .
+					{t.kind = Token.period; break loop;}
+                case Token.lss:                                           // <
+                    recEnd = pos; recKind = Token.lss;
+                    if (ch == '=') {AddCh(); state = Token.leq; break;}
+                    else {t.kind = Token.lss; break loop;}
+                case Token.leq:                                           // <=
+                    {t.kind = Token.leq; break loop;}
+                case Token.gtr:                                           // >
+                    recEnd = pos; recKind = Token.gtr;
+                    if (ch == '=') {AddCh(); state = Token.geq; break;}
+                    else {t.kind = Token.gtr; break loop;}
+                case Token.geq:                                           // >=
+                    {t.kind = Token.geq; break loop;}
+                case Token.excl:                                          // !
+                    if (ch == '=') {AddCh(); state = Token.neq; break; }
                     else {state = 0; break;}
-                case neq:                                           // !=
-                    {t.kind = neq; break loop;}
-                case apostr:                                        // '
-                    if (ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z') {AddCh(); state = charVal; break;}
-                    else {t.kind = apostr; break loop;}
-                case charVal:
-                    if (ch == '\'') {AddCh(); t.kind = charVal; break loop; }
+                case Token.neq:                                           // !=
+                    {t.kind = Token.neq; break loop;}
+                case Token.apostr:                                        // '
+                    if (ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z') {AddCh(); state = Token.charVal; break;}
+                    else {t.kind = Token.apostr; break loop;}
+                case Token.charVal:
+                    if (ch == '\'') {AddCh(); t.kind = Token.charVal; break loop; }
                     else {state = 0; break;}
-                case quote:                                         // "
-                    if (ch <= '!' || ch >= '#' && ch <= 65535) {AddCh(); state = stringVal; break;}
-                    else {t.kind = quote; break loop;}
-                case stringVal:
+                case Token.quote:                                         // "
+                    if (ch <= '!' || ch >= '#' && ch <= 65535) {AddCh(); state = Token.stringVal; break;}
+                    else {t.kind = Token.quote; break loop;}
+                case Token.stringVal:
                     if (ch == '"') {
-                        AddCh(); t.kind = stringVal; break loop;}
-                    else if (ch <= '!' || ch >= '#' && ch <= 65535) {AddCh(); state = stringVal; break; }
+                        AddCh(); t.kind = Token.stringVal; break loop;}
+                    else if (ch <= '!' || ch >= '#' && ch <= 65535) {AddCh(); state = Token.stringVal; break; }
                     else {state = 0; break;}
-                case colon:                                         // :
-					recEnd = pos; recKind = colon;
-					if (ch == '=') {AddCh(); state = assign; break;}
-					else {t.kind = colon; break loop;}
-				case minus:                                      // -
-					recEnd = pos; recKind = minus;
-					if (ch == '>') {AddCh(); state = effect; break;}
-					else {t.kind = minus; break loop;}
-                case assign:
-                    {t.kind = assign; break loop;}
-                case effect:
-                    {t.kind = effect; break loop;}
-                case eofCh: t.kind = eof; break;  // no nextCh() any more
+                case Token.colon:                                         // :
+					recEnd = pos; recKind = Token.colon;
+					if (ch == '=') {AddCh(); state = Token.assign; break;}
+					else {t.kind = Token.colon; break loop;}
+				case Token.minus:                                      // -
+					recEnd = pos; recKind = Token.minus;
+					if (ch == '>') {AddCh(); state = Token.effect; break;}
+					else {t.kind = Token.minus; break loop;}
+                case Token.assign:
+                    {t.kind = Token.assign; break loop;}
+                case Token.effect:
+                    {t.kind = Token.effect; break loop;}
+                case eofCh: t.kind = Token.eof; break;  // no nextCh() any more
 			}
 		}
 		t.val = new String(tval, 0, tlen);
