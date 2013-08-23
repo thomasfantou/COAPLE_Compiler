@@ -41,10 +41,13 @@ public class Builder {
     public static int statementType;    //define what is the current statement type to set the right instructions
     public final static int
         none = 0,
-        if_statement = 1;
+        if_statement = 1,
+        while_statement = 2,
+        repeat_statement = 3;
 
     public static ArrayList<Integer> JumpsIn; //this is a temporary list in which we add address of jumps that will jump into the statement during a fixup, instead of jumping outside
     static int startAddressOfStatement;
+
 
     public static void init() {
         constants = new ArrayList<Instruction>();
@@ -71,6 +74,14 @@ public class Builder {
             case init_: startAddressOfStatement = curr_init; break;
             case rooting_: startAddressOfStatement = curr_rooting; break;
         }
+    }
+
+    public static int getCurrentAddress() {
+        switch(step) {
+            case init_: return curr_init;
+            case rooting_: return curr_rooting;
+        }
+        return -1;
     }
 
 
@@ -232,7 +243,6 @@ public class Builder {
                 switch(op.type.kind) {
                     case Struct.integer_: put(Instruction.push_ + Instruction.typeint_); break;
                     case Struct.real_: put(Instruction.push_ + Instruction.typereal_); break;
-                    case Struct.string_ : put(Instruction.push_ + Instruction.typestring_); break;
                 }
                 put(op.val);
             break;
@@ -287,13 +297,16 @@ public class Builder {
 
     //called in Conditions(), can be called in a if, while and repeat statement.
     //return the address of the instruction (for a jump forward, we need to fixup the jump address later)
-    public static int condition(int[] inf) {    //inf[0] = type, inf[1] = operator
+    public static int condition(int[] inf) {    //inf[0] = type, inf[1] = operator, inf[2] = token
+        switch(inf[0]){
+            case Struct.integer_: put(Instruction.sub_ + Instruction.typeint_); break;
+            case Struct.real_: put(Instruction.sub_ + Instruction.typereal_); break;
+            case Struct.string_: put(Instruction.comparestring_); break;
+            //case Struct.char_: put(Instruction.comparestring_); break;
+        }
         switch(statementType) {
             case if_statement:
-                switch(inf[0]){
-                    case Struct.integer_: put(Instruction.sub_ + Instruction.typeint_); break;
-                    case Struct.real_: put(Instruction.sub_ + Instruction.typereal_); break;
-                }
+            case while_statement:
                 switch(inf[1]){
                     case Token.eqlSign: if(inf[2] == Token.or_) return put(Instruction.ifeq_); else return put(Instruction.ifne_);
                     case Token.neq: if(inf[2] == Token.or_) return put(Instruction.ifne_); else return put(Instruction.ifeq_);
@@ -302,6 +315,8 @@ public class Builder {
                     case Token.lss: if(inf[2] == Token.or_) return put(Instruction.ifgt_); else return put(Instruction.ifle_);
                     case Token.leq: /*if(inf[2] == Token.or_) return put(Instruction.ifge_); else*/ return put(Instruction.iflt_); //TODO: implement IFGE in the VM
                 }
+            break;
+            case repeat_statement:
             break;
         }
         return 0;
@@ -312,6 +327,12 @@ public class Builder {
         switch(step) {
             case init_: for(Integer address : addresses) init.get(address).fixup(getFixupJumpAddress(address)); break;
             case rooting_: for(Integer address : addresses) rooting.get(address).fixup(getFixupJumpAddress(address)); break;
+        }
+    }
+    public static void fixup(int address) {
+        switch(step) {
+            case init_: init.get(address).fixup(getFixupJumpAddress(address)); break;
+            case rooting_:  rooting.get(address).fixup(getFixupJumpAddress(address)); break;
         }
     }
 

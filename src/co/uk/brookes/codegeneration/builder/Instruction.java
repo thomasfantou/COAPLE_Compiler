@@ -17,9 +17,7 @@ public class Instruction {
         pushlistentry_   =  8,
         int2string_    = 13,
         if_    = 14,
-        comparestring_      = 15,
         nop_      = 16,
-        jump_     = 18,
         yield_      = 20,
         loadcaste_    = 21,
         agentnew_      = 22,
@@ -76,7 +74,9 @@ public class Instruction {
         ifeq_ = "IFEQ",
         ifle_ = "IFLE",
         iflt_ = "IFLT",
-        ifgt_ = "IFGT";
+        ifgt_ = "IFGT",
+        jump_ = "JUMP",
+        comparestring_ = "COMPARESTRING";
 
     public static final int  // instruction kind
         constant_ = 0,

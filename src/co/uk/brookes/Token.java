@@ -103,5 +103,7 @@ public class Token {
             quote       = 125,
             excl        = 126,
             concat      = 127,
-            eof         = 128;
+            eof         = 128,
+            true_       = 129,
+            false_      = 130;
 }

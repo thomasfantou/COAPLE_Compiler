@@ -347,7 +347,8 @@ public class Scanner {
 		literals.put("or", new Integer(Token.or_));
 		literals.put("xor", new Integer(Token.xor_));
         literals.put("not", new Integer(Token.not_));
-
+        literals.put("true", new Integer(Token.true_));
+        literals.put("false", new Integer(Token.false_));
 	}
 	
 	public Scanner (String fileName) {

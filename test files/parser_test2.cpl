@@ -14,6 +14,7 @@ state
 	var date2 : Date2;	//Date2 is undeclared
 	var word : string;
 	var letter : char;
+	var b : bool;
 action MyAction(param1 : integer, param2: string, param3)	//type expected
 	begin
 		if param1 = 0 
@@ -35,6 +36,8 @@ init
 		letter := 'rd';  //invalid Factor	
 		n1 := n2;	//variable "n2" not initialized
 		if n1 = 3.2 then n2 := 0; end	//Not comparable types: integer and real
+		b := 3;	//Incompatible types: integer to bool
+		b := true;
 	end
 body
 	begin

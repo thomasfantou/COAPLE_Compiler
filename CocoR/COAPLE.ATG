@@ -231,7 +231,7 @@ PRODUCTIONS
 	
 	Factor = 
 		number
-		| ["not"] Designator
+		| ["not"] (Designator | "true" | "false")
 		| "(" Exp ")"
 		| charVal
 		| stringVal.

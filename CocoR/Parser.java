@@ -8,7 +8,7 @@ public class Parser {
 	public static final int _url = 3;
 	public static final int _charVal = 4;
 	public static final int _stringVal = 5;
-	public static final int maxT = 81;
+	public static final int maxT = 83;
 
 	static final boolean T = true;
 	static final boolean x = false;
@@ -147,7 +147,7 @@ public class Parser {
 			ListType();
 		} else if (la.kind == 19) {
 			EnumeratedType();
-		} else SynErr(82);
+		} else SynErr(84);
 	}
 
 	void TypeExp() {
@@ -157,7 +157,7 @@ public class Parser {
 			StructureType();
 		} else if (la.kind == 1) {
 			ID();
-		} else SynErr(83);
+		} else SynErr(85);
 	}
 
 	void PrimitiveType() {
@@ -171,7 +171,7 @@ public class Parser {
 			Get();
 		} else if (la.kind == 12) {
 			Get();
-		} else SynErr(84);
+		} else SynErr(86);
 	}
 
 	void ID() {
@@ -275,10 +275,10 @@ public class Parser {
 			} else if (la.kind == 22) {
 				Get();
 				if (la.kind == 1) {
-					ParameterList();
+					IDList();
 				}
 				Expect(23);
-			} else SynErr(85);
+			} else SynErr(87);
 			Expect(17);
 			break;
 		}
@@ -320,7 +320,7 @@ public class Parser {
 			WhenStatement();
 			break;
 		}
-		default: SynErr(86); break;
+		default: SynErr(88); break;
 		}
 	}
 
@@ -359,7 +359,7 @@ public class Parser {
 				Get();
 				AgentSetEnum();
 			}
-		} else SynErr(87);
+		} else SynErr(89);
 	}
 
 	void AgentID() {
@@ -437,14 +437,14 @@ public class Parser {
 
 	void Designator() {
 		Expect(1);
-		while (la.kind == 78) {
+		while (la.kind == 80) {
 			Get();
 			Expect(1);
 		}
-		if (la.kind == 79) {
+		if (la.kind == 81) {
 			Get();
 			Exp();
-			Expect(80);
+			Expect(82);
 		}
 	}
 
@@ -474,7 +474,7 @@ public class Parser {
 		} else if (la.kind == 42) {
 			Get();
 			ID();
-		} else SynErr(88);
+		} else SynErr(90);
 	}
 
 	void AgentEvent() {
@@ -494,7 +494,7 @@ public class Parser {
 		} else if (la.kind == 44) {
 			Get();
 			Expect(1);
-		} else SynErr(89);
+		} else SynErr(91);
 	}
 
 	void Block() {
@@ -514,7 +514,7 @@ public class Parser {
 			RepeatLoop();
 		} else if (la.kind == 45) {
 			Loop();
-		} else SynErr(90);
+		} else SynErr(92);
 	}
 
 	void IfStatement() {
@@ -648,7 +648,7 @@ public class Parser {
 			ID();
 			Expect(16);
 			ActionPattern();
-		} else SynErr(91);
+		} else SynErr(93);
 		if (la.kind == 63 || la.kind == 64 || la.kind == 65) {
 			if (la.kind == 63) {
 				Get();
@@ -693,7 +693,7 @@ public class Parser {
 			Get();
 		} else if (la.kind == 68) {
 			Get();
-		} else SynErr(92);
+		} else SynErr(94);
 	}
 
 	void Condition() {
@@ -709,7 +709,7 @@ public class Parser {
 			Get();
 		} else if (la.kind == 64) {
 			Get();
-		} else SynErr(93);
+		} else SynErr(95);
 	}
 
 	void Relop() {
@@ -738,7 +738,7 @@ public class Parser {
 			Get();
 			break;
 		}
-		default: SynErr(94); break;
+		default: SynErr(96); break;
 		}
 	}
 
@@ -749,17 +749,23 @@ public class Parser {
 			Get();
 		} else if (la.kind == 71) {
 			Get();
-		} else SynErr(95);
+		} else SynErr(97);
 	}
 
 	void Factor() {
 		if (la.kind == 2) {
 			Get();
-		} else if (la.kind == 1 || la.kind == 77) {
+		} else if (StartOf(6)) {
 			if (la.kind == 77) {
 				Get();
 			}
-			Designator();
+			if (la.kind == 1) {
+				Designator();
+			} else if (la.kind == 78) {
+				Get();
+			} else if (la.kind == 79) {
+				Get();
+			} else SynErr(98);
 		} else if (la.kind == 22) {
 			Get();
 			Exp();
@@ -768,7 +774,7 @@ public class Parser {
 			Get();
 		} else if (la.kind == 5) {
 			Get();
-		} else SynErr(96);
+		} else SynErr(99);
 	}
 
 
@@ -783,12 +789,13 @@ public class Parser {
 	}
 
 	private static final boolean[][] set = {
-		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, T,T,T,T, T,T,T,x, T,x,T,x, x,T,T,x, x,x,T,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,T, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
-		{x,T,T,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,x, x,x,x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x,x,x}
+		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
+		{x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, T,T,T,T, T,T,T,x, T,x,T,x, x,T,T,x, x,x,T,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
+		{x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
+		{x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,T, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
+		{x,T,T,x, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, x,x,x,x, x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,T,T,T, T,x,x,x, x,x,x,x, x},
+		{x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, x,x,x,x, x}
 
 	};
 } // end Parser
@@ -891,25 +898,28 @@ class Errors {
 			case 75: s = "\"<\" expected"; break;
 			case 76: s = "\"<=\" expected"; break;
 			case 77: s = "\"not\" expected"; break;
-			case 78: s = "\".\" expected"; break;
-			case 79: s = "\"[\" expected"; break;
-			case 80: s = "\"]\" expected"; break;
-			case 81: s = "??? expected"; break;
-			case 82: s = "invalid StructureType"; break;
-			case 83: s = "invalid TypeExp"; break;
-			case 84: s = "invalid PrimitiveType"; break;
-			case 85: s = "invalid Statement"; break;
-			case 86: s = "invalid Statement"; break;
-			case 87: s = "invalid EnvDec"; break;
-			case 88: s = "invalid CasteEvent"; break;
-			case 89: s = "invalid AgentEvent"; break;
-			case 90: s = "invalid LoopStatement"; break;
-			case 91: s = "invalid Scenario"; break;
-			case 92: s = "invalid Addop"; break;
-			case 93: s = "invalid Boolop"; break;
-			case 94: s = "invalid Relop"; break;
-			case 95: s = "invalid Mulop"; break;
-			case 96: s = "invalid Factor"; break;
+			case 78: s = "\"true\" expected"; break;
+			case 79: s = "\"false\" expected"; break;
+			case 80: s = "\".\" expected"; break;
+			case 81: s = "\"[\" expected"; break;
+			case 82: s = "\"]\" expected"; break;
+			case 83: s = "??? expected"; break;
+			case 84: s = "invalid StructureType"; break;
+			case 85: s = "invalid TypeExp"; break;
+			case 86: s = "invalid PrimitiveType"; break;
+			case 87: s = "invalid Statement"; break;
+			case 88: s = "invalid Statement"; break;
+			case 89: s = "invalid EnvDec"; break;
+			case 90: s = "invalid CasteEvent"; break;
+			case 91: s = "invalid AgentEvent"; break;
+			case 92: s = "invalid LoopStatement"; break;
+			case 93: s = "invalid Scenario"; break;
+			case 94: s = "invalid Addop"; break;
+			case 95: s = "invalid Boolop"; break;
+			case 96: s = "invalid Relop"; break;
+			case 97: s = "invalid Mulop"; break;
+			case 98: s = "invalid Factor"; break;
+			case 99: s = "invalid Factor"; break;
 			default: s = "error " + n; break;
 		}
 		printMsg(line, col, s);

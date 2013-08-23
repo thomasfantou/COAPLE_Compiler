@@ -455,7 +455,7 @@ public class Parser {
                                 }
                             }
                         }
-                        if(nPars != op.obj.nPars){     //if the action call doesn't have the same amount of param
+                        if(op.obj != null && nPars != op.obj.nPars){     //if the action call doesn't have the same amount of param
                             SemErr("Invalid amount of parameters");
                         }
 
@@ -756,30 +756,31 @@ public class Parser {
 	}
 
     //Designator =
-    //  ident { "." ident } ["[" Exp "]"].<
+    //  ident { "." ident } ["[" Exp "]"].
 	Obj Designator() {
         Operand op;
-		Expect(Token.ident);
+        Expect(Token.ident);
         Obj obj = STab.find(t.val);
-		while (la.kind == Token.period) {
-			Get();
-			Expect(Token.ident);
-		}
+        while (la.kind == Token.period) {
+            Get();
+            Expect(Token.ident);
+        }
         if (la.kind == Token.lbrack) {
             Get();
             Exp();
             Expect(Token.rbrack);
         }
+
         return obj;
 	}
 
     //Exp =
     //    Term {Addop Term}.
 	int Exp() {
-		int type = Term();
-		while (la.kind == Token.plus || la.kind == Token.minus || la.kind == Token.concat) {
-			String insVal = Addop();
-			int type2 = Term();
+        int type = Term();
+        while (la.kind == Token.plus || la.kind == Token.minus || la.kind == Token.concat) {
+            String insVal = Addop();
+            int type2 = Term();
             if((type == Struct.integer_ && type2 == Struct.integer_) ||
                     (type == Struct.real_ && type2 == Struct.real_) ||
                     (type == Struct.string_ && type2 == Struct.string_)) {  //TODO: string concatenation
@@ -792,7 +793,8 @@ public class Parser {
                 SemErr("Incompatible types: " + Struct.values[type] + " and " + Struct.values[type2]);
                 while(la.kind != Token.semicolon && la.kind != Token.eof) Get();
             }
-		}
+        }
+
         return type;
 	}
 
@@ -911,21 +913,28 @@ public class Parser {
     //    "end".
 	void IfStatement() {
 		Expect(Token.if_);
-        Builder.statementType = Builder.if_statement; //the conditions has to generate the 'if' instructions (because Conditions is also used in other statement type)
+        Builder.statementType = Builder.if_statement; //the conditions has to generate the 'if' instructions (because Conditions is also used in 'while' and 'repeat')
         ArrayList<Integer> addresses = Conditions();
+        ArrayList<Integer> jumpAddresses = new ArrayList<Integer>();    //after every statement of 'if' and 'elseif', we need to jump over the 'else'
 		Expect(Token.then_);
 		Statement();
+        jumpAddresses.add(Builder.put(Instruction.jump_));   //jump over the "elseif" and "else" conditions
         Builder.fixup(addresses);
 		while (la.kind == Token.elseif_) {
 			Get();
-            Conditions();
+            addresses = Conditions();
 			Expect(Token.then_);
 			Statement();
+            jumpAddresses.add(Builder.put(Instruction.jump_));   //jump over the "elseif" and "else" conditions
+            Builder.fixup(addresses);
 		}
 		if (la.kind == Token.else_) {
 			Get();
 			Statement();
+            Builder.fixup(jumpAddresses);
 		}
+        Builder.fixup(jumpAddresses);
+
 		Expect(Token.end_);
 	}
 
@@ -1009,10 +1018,14 @@ public class Parser {
     //WhileLoop =
     //  "while" Conditions "do" Statement "end".
 	void WhileLoop() {
+        Builder.statementType = Builder.while_statement; //the conditions has to generate the 'while' instructions (because Conditions is also used in 'if' and 'repeat')
 		Expect(Token.while_);
-        Conditions();
+        int startAddressOfCondition = Builder.getCurrentAddress();  //we will need to jump back to the condition at the end of the statement
+        ArrayList<Integer> addresses = Conditions();
 		Expect(Token.do_);
 		Statement();
+        Builder.put(Instruction.jump_ + " " + startAddressOfCondition);
+        Builder.fixup(addresses);
 		Expect(Token.end_);
 	}
 
@@ -1173,7 +1186,7 @@ public class Parser {
 
     //Factor =
     //  number
-    //  | ["not"] Designator
+    //  | ["not"] (Designator | "true" | "false")
     //  | "(" Exp ")"
     //  | charVal
     //  | stringVal.
@@ -1194,13 +1207,19 @@ public class Parser {
             }
 		} else if (la.kind == Token.ident || la.kind == Token.not_) {
             if(la.kind == Token.not_) Get();
-			Obj obj = Designator();
-            if(!obj.initialized)
-                SemErr("variable \"" + obj.name + "\" not initialized");
-            Operand op = new Operand(obj);
-            if(op.type != null)
-                type = op.type.kind;
-            Builder.load(op);
+            if(la.kind == Token.ident) {
+                Obj obj = Designator();
+                if(!obj.initialized)
+                    SemErr("variable \"" + obj.name + "\" not initialized");
+                Operand op = new Operand(obj);
+                if(op.type != null)
+                    type = op.type.kind;
+                Builder.load(op);
+            }
+            else if(la.kind == Token.true_ || la.kind == Token.false_) {
+                Get();
+                //TODO : boolean
+            }
 		} else if (la.kind == Token.lpar) {
 			Get();
 			type = Exp();
@@ -1237,7 +1256,7 @@ public class Parser {
         //init "start of" bitsets
         BitSet s;
         s = new BitSet(64); startOfExp = s;
-        s.set(Token.number); s.set(Token.not_); s.set(Token.ident); s.set(Token.lpar); s.set(Token.charVal); s.set(Token.stringVal);
+        s.set(Token.number); s.set(Token.not_); s.set(Token.ident); s.set(Token.lpar); s.set(Token.charVal); s.set(Token.stringVal); s.set(Token.true_); s.set(Token.false_);
 
         //for the error synchronization, those are the token for the recovery
         s = new BitSet(64); syncStat = s;
