@@ -20,6 +20,29 @@ public class Builder {
     static ArrayList<Instruction> init;
     static ArrayList<Instruction> rooting;
 
+    static ArrayList<Action> actions;   //instructions relating to one action.
+    static ArrayList<String> currentActionNames;    //when this is set, adding instruction of an action will automatically add them to the right action from 'actions'
+    static int curr_actionPC;   //temporary PC for the instructions of the current action being parsed.
+    public static void setCurrentActionNames(ArrayList<String> names) {
+        boolean declared = false;
+        curr_actionPC = 0;
+        for(String name : names) {
+            for(Action a : actions)
+                if(a.name.equals((name)))
+                    declared = true;
+            if(!declared)
+                actions.add(new Action(name));
+        }
+
+        currentActionNames = names;
+    }
+    public static void setCurrentActionParam(int c){
+        for(String name : currentActionNames)
+            for(Action a : actions)
+                if(a.name.equals(name))
+                    a.init(c);
+    }
+
     static XMLManager xml;
 
     public static int step;
@@ -63,6 +86,9 @@ public class Builder {
         JumpsIn = new ArrayList<Integer>();
         startAddressOfStatement = 0;
 
+        actions = new ArrayList<Action>();
+        currentActionNames = new ArrayList<String>();
+
         //default nodes
         addLabel("localhost");
         addLabel("all");
@@ -73,15 +99,17 @@ public class Builder {
         switch(step) {
             case init_: startAddressOfStatement = curr_init; break;
             case rooting_: startAddressOfStatement = curr_rooting; break;
+            case actiondec_: startAddressOfStatement = curr_actionPC; break;
         }
     }
 
-    public static int getCurrentAddress() {
+    public static String getCurrentAddress() {
         switch(step) {
-            case init_: return curr_init;
-            case rooting_: return curr_rooting;
+            case init_: return String.valueOf(curr_init);
+            case rooting_: return String.valueOf(curr_rooting);
+            case actiondec_: return Instruction.tempAddress + curr_actionPC;
         }
-        return -1;
+        return "-1";
     }
 
 
@@ -243,6 +271,7 @@ public class Builder {
                 switch(op.type.kind) {
                     case Struct.integer_: put(Instruction.push_ + Instruction.typeint_); break;
                     case Struct.real_: put(Instruction.push_ + Instruction.typereal_); break;
+                    case Struct.bool_: put(Instruction.push_ + Instruction.typeint_); break;
                 }
                 put(op.val);
             break;
@@ -251,6 +280,12 @@ public class Builder {
                 put(String.valueOf(op.adr));
             break;
 
+        }
+        if(step == actiondec_) {    //while creating instruction for action, we don't know if the operand will be from a state or local variable
+            if(op.kind == Operand.local_) {
+                put(Instruction.tempInstructionIn + op.adr);
+                put(Instruction.tempInstructionAddress + op.adr);
+            }
         }
     }
 
@@ -285,6 +320,12 @@ public class Builder {
                 put(Instruction.sendmessage_);
                 break;
         }
+        if(step == actiondec_) {    //while creating instruction for action, we don't know if the operand will be from a state or local variable
+            if(op.kind == Operand.local_){
+                put(Instruction.tempInstructionOut + op.adr);
+                put(Instruction.tempInstructionAddress + op.adr);
+            }
+        }
     }
 
     public static void endInit() {
@@ -303,39 +344,116 @@ public class Builder {
             case Struct.real_: put(Instruction.sub_ + Instruction.typereal_); break;
             case Struct.string_: put(Instruction.comparestring_); break;
             //case Struct.char_: put(Instruction.comparestring_); break;
+            //case Struct.bool_:  //Do nothing, boolean is already 0 or 1
         }
         switch(statementType) {
             case if_statement:
             case while_statement:
                 switch(inf[1]){
-                    case Token.eqlSign: if(inf[2] == Token.or_) return put(Instruction.ifeq_); else return put(Instruction.ifne_);
-                    case Token.neq: if(inf[2] == Token.or_) return put(Instruction.ifne_); else return put(Instruction.ifeq_);
-                    case Token.gtr: if(inf[2] == Token.or_) return put(Instruction.iflt_); else Parser.SemErr("Operator '>' cannot be used, see Builder.condition() explanation"); break; //TODO: implement IFGE in the VM
-                    case Token.geq: if(inf[2] == Token.or_) return put(Instruction.ifle_); else  return put(Instruction.ifgt_);
-                    case Token.lss: if(inf[2] == Token.or_) return put(Instruction.ifgt_); else return put(Instruction.ifle_);
+                    case Token.eqlSign:
+                        if(inf[2] == Token.or_) {
+                            int a = put(Instruction.ifeq_);
+                            JumpsIn.add(a); return a; //with a "or" boolean operator, we will require a jump instruction in the statement
+                        } else return put(Instruction.ifne_);
+                    case Token.neq:
+                        if(inf[2] == Token.or_) {
+                            int a =  put(Instruction.ifne_);
+                            JumpsIn.add(a); return a;
+                        } else return put(Instruction.ifeq_);
+                    case Token.gtr:
+                        if(inf[2] == Token.or_) {
+                            int a = put(Instruction.iflt_);
+                            JumpsIn.add(a); return a;
+                        } else Parser.SemErr("Operator '>' cannot be used, see Builder.condition() explanation"); break; //TODO: implement IFGE in the VM
+                    case Token.geq:
+                        if(inf[2] == Token.or_) {
+                            int a = put(Instruction.ifle_);
+                            JumpsIn.add(a); return a;
+                        } else  return put(Instruction.ifgt_);
+                    case Token.lss:
+                        if(inf[2] == Token.or_) {
+                            int a = put(Instruction.ifgt_);
+                            JumpsIn.add(a); return a;
+                        } else return put(Instruction.ifle_);
                     case Token.leq: /*if(inf[2] == Token.or_) return put(Instruction.ifge_); else*/ return put(Instruction.iflt_); //TODO: implement IFGE in the VM
+                    case Token.none:
+                        if(inf[2] == Token.or_) {
+                            int a = put(Instruction.ifne_);
+                            JumpsIn.add(a); return a; //with a "or" boolean operator, we will require a jump instruction in the statement
+                        } else return put(Instruction.ifeq_);
                 }
             break;
             case repeat_statement:
+                int a;
+                switch(inf[1]){
+                    case Token.eqlSign:
+                        if(inf[2] == Token.or_) return put(Instruction.ifeq_);
+                        else {
+                            a = put(Instruction.ifne_);
+                            JumpsIn.add(a); return a;   //repeat loop -> jumps back in the statement
+                        }
+                    case Token.neq:
+                        if(inf[2] == Token.or_) return put(Instruction.ifne_);
+                        else {
+                            a = put(Instruction.ifeq_);
+                            JumpsIn.add(a); return a;
+                        }
+                    case Token.gtr:
+                        if(inf[2] == Token.or_) return put(Instruction.iflt_);
+                        else {
+                            /*a = put(Instruction.ifge_);
+                            JumpsIn.add(a); return a;*/
+                            Parser.SemErr("Operator '>' cannot be used, see Builder.condition() explanation"); break; //TODO: implement IFGE in the VM
+                        }
+                    case Token.geq:
+                        if(inf[2] == Token.or_) return put(Instruction.ifle_);
+                        else {
+                            a = put(Instruction.ifgt_);
+                            JumpsIn.add(a); return a;
+                        }
+                    case Token.lss:
+                        if(inf[2] == Token.or_) /*return put(Instruction.ifge_);*/ Parser.SemErr("Operator '<' cannot be used, see Builder.condition() explanation");  //TODO: implement IFGE in the VM
+                        else {
+                            a = put(Instruction.ifle_);
+                            JumpsIn.add(a); return a;
+                        }
+                    case Token.leq:
+                        if(inf[2] == Token.or_) return put(Instruction.ifgt_);
+                        else {
+                            a = put(Instruction.iflt_);
+                            JumpsIn.add(a); return a;
+                        }
+                    case Token.none: Parser.SemErr("Not a valid condition for repeat loop"); //happens if we write a boolean, e.g "repeat ... until true"
+
+                }
             break;
         }
         return 0;
     }
 
-    //when a jump forward is required, the fixup will fixup the previous jump instruction to set the jump address
+    //when a jump forward is required, the method will fixup the previous jump instruction to set the jump address
     public static void fixup(ArrayList<Integer> addresses) {
         switch(step) {
             case init_: for(Integer address : addresses) init.get(address).fixup(getFixupJumpAddress(address)); break;
             case rooting_: for(Integer address : addresses) rooting.get(address).fixup(getFixupJumpAddress(address)); break;
+            case actiondec_:
+                for(Integer address : addresses) {
+                    for(String name : currentActionNames){
+                        for(Action action : actions){
+                            if(action.name.equals(name))
+                                action.instructions.get(address).tempFixup(getFixupJumpAddress(address));
+                        }
+                    }
+                }
         }
     }
-    public static void fixup(int address) {
-        switch(step) {
-            case init_: init.get(address).fixup(getFixupJumpAddress(address)); break;
-            case rooting_:  rooting.get(address).fixup(getFixupJumpAddress(address)); break;
-        }
+    public static void fixup(int address){
+        ArrayList<Integer> ar = new ArrayList<Integer>();
+        ar.add(address);
+        fixup(ar);
     }
 
+    //basically, the jump has to be done after the statement, but if it has been specified to jump in, then the address of the start of statement will be used.
     private static int getFixupJumpAddress(int srcAddress) {
         int addressToJump = 0;
         if(JumpsIn.contains(srcAddress)) {
@@ -346,9 +464,68 @@ public class Builder {
             switch(step) {
                 case init_: addressToJump = curr_init; break;
                 case rooting_: addressToJump = curr_rooting; break;
+                case actiondec_: addressToJump = curr_actionPC; break;
             }
         }
         return addressToJump;
+    }
+
+    public static void setParam(Obj param, int paramIndex) {
+        for(String name : currentActionNames)
+            for(Action action : actions)
+                if(action.name.equals(name)){
+                    action.paramType[paramIndex] = param.kind;
+                    action.paramAddress[paramIndex] = param.adr;
+                }
+    }
+
+    public static void putAction(Obj actionObj) {
+        put(Instruction.setaction_);
+        put(String.valueOf(actionObj.adr));
+        put(Instruction.updateaction_);
+        put(String.valueOf(actionObj.adr));
+        put(Instruction.sendmessage_);
+
+        int startAddressOfAction = 0;
+        switch(step) {
+            case init_: startAddressOfAction = curr_init; break;
+            case rooting_ : startAddressOfStatement = curr_rooting; break;
+        }
+        for(Action action : actions){
+            if(action.name.equals(actionObj.name)) {
+                for(Instruction ins : action.instructions)
+                    putWithFixes(ins.insVal, startAddressOfAction, actionObj.name);
+            }
+        }
+    }
+
+    //this is called when we want to put an action, the addresses of jumps in the instruction of action are temporary, and need to be fixed to match the program bytecode
+    static public int putWithFixes(String code, int startAddressOfAction, String actionName){
+        Instruction ins = new Instruction(code);
+        switch(step) {
+            case init_:
+                ins.address = curr_init++;
+                int request = ins.arrange(startAddressOfAction);
+                if(request != -1){
+                    for(Action action : actions)
+                        if(action.name.equals(actionName))
+                            ins.arrange2(action.paramType[request], action.paramAddress[request]);
+
+                }
+                init.add(ins);
+            break;
+            case rooting_:
+                ins.address = curr_rooting++;
+                request = ins.arrange(startAddressOfAction);
+                if(request != -1){
+                    for(Action action : actions)
+                        if(action.name.equals(actionName))
+                            ins.arrange2(action.paramType[request], action.paramAddress[request]);
+                }
+                rooting.add(ins);
+            break;
+        }
+        return ins.address;
     }
 
     static public int put(String code) {
@@ -357,6 +534,16 @@ public class Builder {
             case envdec_: ins.address = curr_init++; init.add(ins); break; //environment observed are instruction in the init block
             case init_: ins.address = curr_init++; init.add(ins); break;
             case rooting_: ins.address = curr_rooting++; rooting.add(ins); break;
+            case actiondec_ :
+                for(Action a : actions) {
+                    for(String currentActionName : currentActionNames) {
+                        if (a.name.equals(currentActionName)) {
+                            a.add(ins);
+                            ins.address = curr_actionPC++;
+                        }
+                    }
+                }
+            break;
         }
         return ins.address;
     }
@@ -370,4 +557,24 @@ public class Builder {
         xml.generateFile(constants, init, rooting);
     }
 
+}
+
+class Action {
+    public String name;
+    ArrayList<Instruction> instructions = new ArrayList<Instruction>();
+    int[] paramType;    //e.g. param sent is a state
+    int[] paramAddress; //e.g. it is first state, so address 0
+
+    public Action(String str){
+        name = str;
+    }
+
+    public void add(Instruction ins) {
+        instructions.add(ins);
+    }
+
+    public void init(int paramCount) {
+        paramType = new int[paramCount];
+        paramAddress = new int[paramCount];
+    }
 }

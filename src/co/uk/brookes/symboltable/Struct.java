@@ -20,6 +20,10 @@ public class Struct {
     public static final String[] values = {
             "none", "integer", "real", "bool", "char", "string", "caste", "list", "enum", "record"};
 
+    public static final int
+        FALSE = 0,
+        TRUE = 1;
+
     public int     kind;		    // integer, char, declared type...
     public Struct  listType;        // List: list type
     public int     nFields;         // Caste/List/Record/Enum: number of fields

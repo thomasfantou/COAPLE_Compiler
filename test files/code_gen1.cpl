@@ -6,8 +6,12 @@ state
 	var y: integer;
 	var g: string;
 	var z: real;
-action
-	test(param1 : integer, param2 : string)
+	var b: bool;
+action test();
+action test2()
+	while x < 10 or y = 0 do x := x + 1; end
+;
+action test3(param1 : integer, param2 : string)
 	begin
 		if param1 = 0 
 		then 
@@ -21,10 +25,12 @@ init
 		//x := (1 + 5) * 10;
 		//g := "koko!";
 		//z := 3.1 - 1.1;
+		//b := true;
 		
-		if x = 1 then y := 0; end
+		//if x = 1 then y := 0; end
 		//if x <= 1 then y := 0; end //try the different operator
 		//if g = "koko" then y := 0; end
+		//if b then y := 0; end
 		//if x >= 1 and x < 3 then y := 0; end
 		//if x = 0 or y = 0 or z = 0.0 then g := "zero"; end
 		//if x < 10 or y <= 10 then g := "good"; end
@@ -34,6 +40,14 @@ init
 		//while x < 10 do x := x + 1; end
 		//while x < 10 and y < 10 do begin x := x + 1; y := y + 2; end end
 		//while x < 10 or y = 0 do x := x + 1; end
+		
+		//repeat x := x - 1; until x = 0 end
+		//repeat begin x := x - 1; y := y - 2; end until x = 0 and y <= 0 end
+		//repeat begin x := x - 1; y := y - 2; end until x > 0 or y <= 0 end
+		
+		//test();
+		//test2();
+		//test3(x, g);
 	end
 body
 	//x := y + 10;

@@ -50,6 +50,13 @@ public class Operand {
         kind = con_; this.val = String.valueOf(val); type = STab.integerType;
     }
 
+    public Operand(boolean bool) {
+        kind = con_;
+        if(bool) this.val = String.valueOf(Struct.TRUE);
+        else this.val = String.valueOf(Struct.FALSE);
+        type = STab.boolType;
+    }
+
     public Operand(float val) {
         kind = con_; this.val = String.valueOf(val); type = STab.realType;
     }

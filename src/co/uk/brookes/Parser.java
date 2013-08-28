@@ -432,7 +432,7 @@ public class Parser {
                                 SemErr("Incompatible types: " + Struct.values[type] + " to " + Struct.values[op.type.kind]);
                         }
                         Builder.assign(op);
-                    } else if (la.kind == Token.lpar) {
+                    } else if (la.kind == Token.lpar) { //this is the call of an action
                         Get();
 
                         int nPars = 0;
@@ -451,6 +451,8 @@ public class Parser {
                                                 break;
                                             }
                                         }
+                                        Builder.load(new Operand(o));
+                                        Builder.setParam(o, i);
                                     }
                                 }
                             }
@@ -458,6 +460,8 @@ public class Parser {
                         if(op.obj != null && nPars != op.obj.nPars){     //if the action call doesn't have the same amount of param
                             SemErr("Invalid amount of parameters");
                         }
+
+                        Builder.putAction(obj);
 
                         Expect(Token.rpar);
                     } else SynErr(74);
@@ -679,6 +683,7 @@ public class Parser {
 	void ActionDec() {
 		Expect(Token.action_);
         ArrayList<String> ids = IDList();
+        Builder.setCurrentActionNames(ids); //the statement of the actions can be correctly related to the actions objects
         Obj[] objs = new Obj[ids.size()];
         int nParam = 0;
         for(int i = 0; i < ids.size(); i++) //because IDList
@@ -690,6 +695,7 @@ public class Parser {
 		}
         for(int i = 0; i < objs.length; i++)
             objs[i].nPars = nParam;
+        Builder.setCurrentActionParam(nParam);
 
 		Expect(Token.rpar);
 		if (StartOf(3)) {
@@ -802,14 +808,11 @@ public class Parser {
     //  Condition {Boolop Condition}.
     //return addresses of jumps which need to be fixed later
     ArrayList<Integer> Conditions() {
-        int[] res = Condition();
+        int[] res = Condition();    //return type of exp and relation operator
         ArrayList<Integer> addresses = new ArrayList<Integer>();
         while(la.kind == Token.and_ || la.kind == Token.or_) {
-            res[2] = la.kind;
-            int address = Builder.condition(res);
-            addresses.add(address);
-            if(la.kind == Token.or_)
-                Builder.JumpsIn.add(new Integer(address));  //with a "or" boolean operator, we will require a jump instruction in the statement
+            res[2] = la.kind;   //add the token to the result
+            addresses.add(Builder.condition(res));  //the Builder put the right instruction regarding the information in res, the address of the instruction will be required for a fixup
             Boolop();
             res = Condition();
         }
@@ -823,20 +826,21 @@ public class Parser {
         int[] res = new int[3]; //Builder.condition expect 3 information: 0- variable type, 1- relation operator, 2- boolean operator
         int type = Exp();
         res[0] = type;
+        res[1] = Token.none; //by default, there is no relation operator (case of boolean condition)
+        res[2] = Token.none; //by default, there is no boolean operator
         if(la.kind == Token.neq || la.kind == Token.gtr || la.kind == Token.geq
                 || la.kind == Token.lss || la.kind == Token.leq || la.kind == Token.eqlSign) {
             res[1] = la.kind;
             Relop();
             int type2 = Exp();
-            if((type == Struct.integer_ && type2 == Struct.integer_) || //TODO: Only integer and real are treated here for condition
-                (type == Struct.real_ && type2 == Struct.real_)) {
-
+            if((type == Struct.integer_ && type2 == Struct.integer_) || //TODO: Only integer, real and string are treated here for condition
+                (type == Struct.real_ && type2 == Struct.real_) ||
+                (type == Struct.string_ && type2 == Struct.string_)) {
             }
             else{
                 Sync("Not comparable types: " + Struct.values[type] + " and " + Struct.values[type2]);
             }
         }
-        res[2] = 0; //by default, there is no boolean operator
         return res;
     }
 
@@ -931,9 +935,8 @@ public class Parser {
 		if (la.kind == Token.else_) {
 			Get();
 			Statement();
-            Builder.fixup(jumpAddresses);
 		}
-        Builder.fixup(jumpAddresses);
+        Builder.fixup(jumpAddresses);   //fixup the instruction to jump after the statement
 
 		Expect(Token.end_);
 	}
@@ -1020,7 +1023,7 @@ public class Parser {
 	void WhileLoop() {
         Builder.statementType = Builder.while_statement; //the conditions has to generate the 'while' instructions (because Conditions is also used in 'if' and 'repeat')
 		Expect(Token.while_);
-        int startAddressOfCondition = Builder.getCurrentAddress();  //we will need to jump back to the condition at the end of the statement
+        String startAddressOfCondition = Builder.getCurrentAddress();  //we will need to jump back to the condition at the end of the statement
         ArrayList<Integer> addresses = Conditions();
 		Expect(Token.do_);
 		Statement();
@@ -1032,10 +1035,13 @@ public class Parser {
     //RepeatLoop =
     //  "repeat" Statement "until" Conditions "end".
 	void RepeatLoop() {
+        Builder.statementType = Builder.repeat_statement; //the conditions has to generate the 'repeat' instructions (because Conditions is also used in 'if' and 'while')
 		Expect(Token.repeat_);
 		Statement();
 		Expect(Token.until_);
-        Conditions();
+        ArrayList<Integer> addresses = Conditions();
+        Builder.fixup(addresses);   //jump instruction is in the JumpsIn list, it will be fixed up to jump back in the statement
+
 		Expect(Token.end_);
 	}
 
@@ -1205,7 +1211,8 @@ public class Parser {
                 Operand op = new Operand(number);
                 Builder.load(op);
             }
-		} else if (la.kind == Token.ident || la.kind == Token.not_) {
+		} else if (la.kind == Token.ident || la.kind == Token.not_ ||
+                la.kind == Token.true_ || la.kind == Token.false_) {
             if(la.kind == Token.not_) Get();
             if(la.kind == Token.ident) {
                 Obj obj = Designator();
@@ -1217,8 +1224,13 @@ public class Parser {
                 Builder.load(op);
             }
             else if(la.kind == Token.true_ || la.kind == Token.false_) {
+                Operand op;
+                if(la.kind == Token.true_)
+                    op = new Operand(true);
+                else
+                    op = new Operand(false);
                 Get();
-                //TODO : boolean
+                Builder.load(op);
             }
 		} else if (la.kind == Token.lpar) {
 			Get();
