@@ -43,6 +43,11 @@ public class Builder {
                     a.init(c);
     }
 
+    static int idxCurrentLocalVar = 0;
+    public static int getIdxLocalVar(){
+        return ++idxCurrentLocalVar;    //first index of lovalvar[] will be 1 (in the VM, 0 is already used)
+    }
+
     static XMLManager xml;
 
     public static int step;
@@ -271,12 +276,16 @@ public class Builder {
                 switch(op.type.kind) {
                     case Struct.integer_: put(Instruction.push_ + Instruction.typeint_); break;
                     case Struct.real_: put(Instruction.push_ + Instruction.typereal_); break;
-                    case Struct.bool_: put(Instruction.push_ + Instruction.typeint_); break;
+                    case Struct.bool_: put(Instruction.push_ + Instruction.typebool_); break;
                 }
                 put(op.val);
             break;
             case Operand.state_:
                 put(Instruction.pushstate_);
+                put(String.valueOf(op.adr));
+            break;
+            case Operand.local_:
+                put(Instruction.pushvar_);
                 put(String.valueOf(op.adr));
             break;
 
@@ -318,6 +327,10 @@ public class Builder {
                 put(Instruction.upstate_);
                 put(String.valueOf(op.adr));
                 put(Instruction.sendmessage_);
+                break;
+            case Operand.local_ :
+                put(Instruction.storevar_);
+                put(String.valueOf(op.adr));
                 break;
         }
         if(step == actiondec_) {    //while creating instruction for action, we don't know if the operand will be from a state or local variable
@@ -453,6 +466,20 @@ public class Builder {
         fixup(ar);
     }
 
+    public static void fixup(int addressSrc, int addressDest){
+        switch(step) {
+            case init_: init.get(addressSrc).fixup(addressDest); break;
+            case rooting_: rooting.get(addressSrc).fixup(addressDest); break;
+            case actiondec_:
+                for(String name : currentActionNames){
+                    for(Action action : actions){
+                        if(action.name.equals(name))
+                            action.instructions.get(addressSrc).tempFixup(addressDest);
+                    }
+                }
+        }
+    }
+
     //basically, the jump has to be done after the statement, but if it has been specified to jump in, then the address of the start of statement will be used.
     private static int getFixupJumpAddress(int srcAddress) {
         int addressToJump = 0;
@@ -477,6 +504,31 @@ public class Builder {
                     action.paramType[paramIndex] = param.kind;
                     action.paramAddress[paramIndex] = param.adr;
                 }
+    }
+
+    public static ArrayList<Integer> forLoopBy(Operand op) {
+        ArrayList<Integer> addressesToFix = new ArrayList<Integer>();
+        assign(op);
+        load(op);   //val of localvar by is to the top of stack
+        int ad1 = put(Instruction.iflt_);
+        put(Instruction.sub_ + Instruction.typeint_);
+        addressesToFix.add(put(Instruction.iflt_));
+        int jumpAdd = put(Instruction.jump_);
+        addressesToFix.add(jumpAdd); JumpsIn.add(jumpAdd);
+        int fx1 = put(Instruction.sub_ + Instruction.typeint_);
+        fixup(ad1, fx1);
+        addressesToFix.add(put(Instruction.ifgt_));
+        return addressesToFix;
+    }
+
+    public static void forLoopBy2(Operand op, Operand opBy) {
+        put(Instruction.pushvar_);
+        put(String.valueOf(op.adr));
+        put(Instruction.pushvar_);
+        put(String.valueOf(opBy.adr));
+        put(Instruction.add_ + Instruction.typeint_);
+        put(Instruction.storevar_);
+        put(String.valueOf(op.adr));
     }
 
     public static void putAction(Obj actionObj) {

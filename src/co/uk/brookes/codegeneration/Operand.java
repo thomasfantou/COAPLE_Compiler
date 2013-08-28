@@ -34,7 +34,7 @@ public class Operand {
             case Obj.state_:
                 kind = state_; break;
             case Obj.var_:
-                kind = local_; break;
+                kind = local_; adr = o.localvarAddr; break;
             case Obj.action_:
                 kind = action_; obj = o; break;
             case Obj.environment_:

@@ -30,12 +30,11 @@ init
 		//if x = 1 then y := 0; end
 		//if x <= 1 then y := 0; end //try the different operator
 		//if g = "koko" then y := 0; end
-		//if b then y := 0; end
 		//if x >= 1 and x < 3 then y := 0; end
 		//if x = 0 or y = 0 or z = 0.0 then g := "zero"; end
 		//if x < 10 or y <= 10 then g := "good"; end
 		//if x = 1 then y := 1; elseif x = 2 then y := 2; else y := 0; end
-		//if bool , TODO; boolean not implemented
+		//if b then y := 0; end
 		
 		//while x < 10 do x := x + 1; end
 		//while x < 10 and y < 10 do begin x := x + 1; y := y + 2; end end
@@ -45,9 +44,15 @@ init
 		//repeat begin x := x - 1; y := y - 2; end until x = 0 and y <= 0 end
 		//repeat begin x := x - 1; y := y - 2; end until x > 0 or y <= 0 end
 		
+		for i := 0 to 10 do x := x + 1; end
+		//for i := 0 to 10 by 1 do x := i; end
+		//for j := 10 to 0 by -1 do x := j; end
+		
 		//test();
 		//test2();
 		//test3(x, g);
+		
+		//traiter les nombre négatif FFS
 	end
 body
 	//x := y + 10;

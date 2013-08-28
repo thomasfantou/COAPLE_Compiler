@@ -446,7 +446,7 @@ public class Parser {
                                         for(Obj p = op.obj.locals; p != null; p = p.next) {
                                             if(p.adr == i) {    //for the param number i, we will find the object in the locals variable of the method to the position i
                                                 if(p.type.kind != o.type.kind) {
-                                                    SemErr("Param number " + i + " has uncompatible type");
+                                                    SemErr("Param number " + i + " has incompatible type");
                                                 }
                                                 break;
                                             }
@@ -1004,17 +1004,53 @@ public class Parser {
     //  "end".
 	void ForLoop() {
 		Expect(Token.for_);
+        STab.openScope();
 		Expect(Token.ident);
+        String identVal = t.val;
 		Expect(Token.assign);
-		Exp();
+		int type = Exp();
+        Obj obj = STab.insert(Obj.var_, identVal, new Struct(type));
+        obj.localvarAddr = Builder.getIdxLocalVar();
+        obj.initialized = true;
+        Operand op = new Operand(obj);
+        Builder.assign(op);
+        String startAddressOfForLoop = Builder.getCurrentAddress();
+        Builder.load(op);
+        ArrayList<Integer> addressesToFix = new ArrayList<Integer>();
 		Expect(Token.to_);
-		Exp();
+        int type2 = Exp();
+        if(type != type2)
+            SemErr("exp1 and exp2 are incompatible type");
+
+        boolean byStatement = false;
 		if (la.kind == Token.by_) {
 			Get();
-			Exp();
+            byStatement = true;
+			int type3 = Exp();
+            if(type != type3)
+                SemErr("'by' expression is incompatible type");
+
+            Obj objBy = STab.insert(Obj.var_, "by", new Struct(type3));  //adding in the scope a temporary variable "by"
+            objBy.localvarAddr = Builder.getIdxLocalVar();
+            objBy.initialized = true;
+            Operand opBy = new Operand(objBy);
+            addressesToFix.addAll(Builder.forLoopBy(opBy));
 		}
+        else {
+            Builder.put(Instruction.sub_ + Instruction.typeint_);
+            addressesToFix.add(Builder.put(Instruction.ifeq_));
+        }
 		Expect(Token.do_);
 		Statement();
+        if(byStatement){
+            Obj objBy = STab.find("by");
+            Operand opBy = new Operand(objBy);
+            Builder.forLoopBy2(op, opBy);
+        }
+        Builder.put(Instruction.jump_ + " " + startAddressOfForLoop);
+        Builder.fixup(addressesToFix);
+
+        STab.closeScope();
 		Expect(Token.end_);
 	}
 

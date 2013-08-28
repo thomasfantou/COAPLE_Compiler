@@ -27,6 +27,7 @@ public class Obj {
     public Obj    locals;   // Action: parameters and local objects
     public Obj    next;		// next local object in this scope
     public boolean initialized; //if constant has been initialized
+    public int localvarAddr; //the address given by builder corresponding to the Localvar[] table of the VM
 
     public Obj(int kind, String name, Struct type) {
         this.kind = kind; this.name = name; this.type = type;
