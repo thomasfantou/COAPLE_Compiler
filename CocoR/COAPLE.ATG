@@ -11,10 +11,11 @@ CHARACTERS
 	apostr = '\''.
 	quote = '\"'.
 	underscore = '_'.
+	neg = "-".
 	stringChar = ANY - '"'.
 TOKENS
 	ident = (letter|underscore) {letter|digit|underscore}.
-	number = digit {digit} [period digit {digit}].
+	number = [neg] digit {digit} [period digit {digit}].
 	url = urlChar {letter|slash}.
 	charVal = apostr letter apostr.
 	stringVal = quote stringChar {stringChar} quote.

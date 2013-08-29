@@ -20,8 +20,8 @@ action test3(param1 : integer, param2 : string)
 	end;
 init 
 	begin
-		//x := 2;
-		//x := 4 + 3 * 2 + 1;
+		//x := 3;
+		//x := 4 + 3 * -2 + 1;
 		//x := (1 + 5) * 10;
 		//g := "koko!";
 		//z := 3.1 - 1.1;
@@ -44,15 +44,19 @@ init
 		//repeat begin x := x - 1; y := y - 2; end until x = 0 and y <= 0 end
 		//repeat begin x := x - 1; y := y - 2; end until x > 0 or y <= 0 end
 		
-		for i := 0 to 10 do x := x + 1; end
+		//for i := 0 to 10 do x := x + 1; end
 		//for i := 0 to 10 by 1 do x := i; end
 		//for j := 10 to 0 by -1 do x := j; end
+		
+		//loop x := x + 1; end
 		
 		//test();
 		//test2();
 		//test3(x, g);
 		
-		//traiter les nombre négatif FFS
+		//case x of 1 -> y := 2; 2 -> y := 10; else y := 100; end
+		//case g of "koko" -> y := 2; "hello" -> y := 10; end
+		
 	end
 body
 	//x := y + 10;

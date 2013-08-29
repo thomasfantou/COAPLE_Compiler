@@ -948,17 +948,38 @@ public class Parser {
     //  "end".
 	void CaseStatement() {
 		Expect(Token.case_);
-		Exp();
+        STab.openScope();
+        ArrayList<Integer> addressesToFix = new ArrayList<Integer>();
+		int type = Exp();
+        Obj obj = STab.insert(Obj.var_, "caseExp", new Struct(type));
+        obj.localvarAddr = Builder.getIdxLocalVar();
+        obj.initialized = true;
+        Operand op = new Operand(obj);
+        Builder.assign(op);
+        Builder.load(op);
 		Expect(Token.of_);
+        boolean firstCase = true;
 		while (startOfExp.get(la.kind)) {
-			Exp();
+            if(!firstCase) { //in every case (except the first one) we push the localvar to the stack to compare it
+                Builder.put(Instruction.pushvar_);
+                Builder.put(String.valueOf(op.adr));
+            }
+            firstCase = false;
+			int type2 = Exp();
+            if(type != type2) SemErr("Incompatible types in case expression");
+            Builder.compare(type);
+            int address = Builder.put(Instruction.ifne_);
 			Expect(Token.effect);
 			Statement();
+            addressesToFix.add(Builder.put(Instruction.jump_)); //jump outside
+            Builder.fixup(address);
 		}
 		if (la.kind == Token.else_) {
 			Get();
 			Statement();
 		}
+        Builder.fixup(addressesToFix);
+        STab.closeScope();
 		Expect(Token.end_);
 	}
 
@@ -1023,6 +1044,7 @@ public class Parser {
             SemErr("exp1 and exp2 are incompatible type");
 
         boolean byStatement = false;
+        Obj objBy = null;
 		if (la.kind == Token.by_) {
 			Get();
             byStatement = true;
@@ -1030,7 +1052,7 @@ public class Parser {
             if(type != type3)
                 SemErr("'by' expression is incompatible type");
 
-            Obj objBy = STab.insert(Obj.var_, "by", new Struct(type3));  //adding in the scope a temporary variable "by"
+            objBy = STab.insert(Obj.var_, "byExp", new Struct(type3));  //adding in the scope a temporary variable "by"
             objBy.localvarAddr = Builder.getIdxLocalVar();
             objBy.initialized = true;
             Operand opBy = new Operand(objBy);
@@ -1043,12 +1065,17 @@ public class Parser {
 		Expect(Token.do_);
 		Statement();
         if(byStatement){
-            Obj objBy = STab.find("by");
             Operand opBy = new Operand(objBy);
             Builder.forLoopBy2(op, opBy);
         }
         Builder.put(Instruction.jump_ + " " + startAddressOfForLoop);
         Builder.fixup(addressesToFix);
+        Builder.put(Instruction.resetvar_);
+        Builder.put(String.valueOf(obj.localvarAddr));
+        if(byStatement){
+            Builder.put(Instruction.resetvar_);
+            Builder.put(String.valueOf(objBy.localvarAddr));
+        }
 
         STab.closeScope();
 		Expect(Token.end_);
@@ -1085,7 +1112,9 @@ public class Parser {
     //  "loop" Statement "end".
 	void Loop() {
 		Expect(Token.loop_);
+        String startAddressOfLoop = Builder.getCurrentAddress();
 		Statement();
+        Builder.put(Instruction.jump_ + " " + startAddressOfLoop);
 		Expect(Token.end_);
 	}
 
@@ -1253,7 +1282,8 @@ public class Parser {
             if(la.kind == Token.ident) {
                 Obj obj = Designator();
                 if(!obj.initialized)
-                    SemErr("variable \"" + obj.name + "\" not initialized");
+                    if(Builder.step != Builder.actiondec_)
+                        SemErr("variable \"" + obj.name + "\" not initialized");
                 Operand op = new Operand(obj);
                 if(op.type != null)
                     type = op.type.kind;
