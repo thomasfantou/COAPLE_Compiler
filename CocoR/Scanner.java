@@ -282,18 +282,18 @@ public class Scanner {
 		for (int i = 95; i <= 95; ++i) start.set(i, 1);
 		for (int i = 97; i <= 122; ++i) start.set(i, 1);
 		for (int i = 48; i <= 57; ++i) start.set(i, 2);
+		for (int i = 45; i <= 45; ++i) start.set(i, 32);
 		for (int i = 64; i <= 64; ++i) start.set(i, 5);
 		for (int i = 39; i <= 39; ++i) start.set(i, 6);
 		for (int i = 34; i <= 34; ++i) start.set(i, 9);
 		start.set(44, 12); 
-		start.set(58, 32); 
+		start.set(58, 33); 
 		start.set(59, 13); 
 		start.set(61, 14); 
 		start.set(40, 15); 
 		start.set(41, 16); 
 		start.set(123, 18); 
 		start.set(125, 19); 
-		start.set(45, 33); 
 		start.set(43, 34); 
 		start.set(42, 22); 
 		start.set(47, 23); 
@@ -576,13 +576,14 @@ public class Scanner {
 				case 31:
 					{t.kind = 82; break loop;}
 				case 32:
+					recEnd = pos; recKind = 67;
+					if (ch >= '0' && ch <= '9') {AddCh(); state = 2; break;}
+					else if (ch == '>') {AddCh(); state = 20; break;}
+					else {t.kind = 67; break loop;}
+				case 33:
 					recEnd = pos; recKind = 16;
 					if (ch == '=') {AddCh(); state = 17; break;}
 					else {t.kind = 16; break loop;}
-				case 33:
-					recEnd = pos; recKind = 67;
-					if (ch == '>') {AddCh(); state = 20; break;}
-					else {t.kind = 67; break loop;}
 				case 34:
 					recEnd = pos; recKind = 66;
 					if (ch == '+') {AddCh(); state = 21; break;}

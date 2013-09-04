@@ -87,6 +87,14 @@ public class STab {
         obj.type.nFields = curScope.nVars;
     }
 
+    public static boolean tryFind(String name)
+    {
+        for (Scope s = curScope; s != null; s = s.outer)
+            for (Obj p = s.locals; p != null; p = p.next)
+                if (p.name.equals(name)) return true;
+        return false;
+    }
+
     // Retrieve the object with the given name from the top scope
     public static Obj find(String name)
     {

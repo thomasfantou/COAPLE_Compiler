@@ -251,6 +251,7 @@ public class Scanner {
 	public Buffer buffer; // scanner buffer
 
 	Token t;           // current token
+    Token lt;          // last token
 	int ch;            // current input character
 	int pos;           // byte position of current character
 	int charPos;       // position by unicode characters starting with 0
@@ -491,7 +492,7 @@ public class Scanner {
 				case Token.identChar:
 					recEnd = pos; recKind = Token.ident;
                     if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); state = Token.identChar; break;}
-					else {t.kind = Token.ident; t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}
+					else {t.kind = Token.ident; t.val = new String(tval, 0, tlen); CheckLiteral(); lt = t; return t;}
 				case Token.digit:
 					recEnd = pos; recKind = Token.number;
                     if (ch == '.') {AddCh(); state = Token.decimal; break;}
@@ -573,6 +574,9 @@ public class Scanner {
 					else {t.kind = Token.colon; break loop;}
 				case Token.minus:                                      // -
 					recEnd = pos; recKind = Token.minus;
+                    if(lt.kind != Token.ident & lt.kind != Token.number && lt.kind != Token.digit)
+                        if (ch >= '0' && ch <= '9') {AddCh(); state = Token.digit; break;}
+
 					if (ch == '>') {AddCh(); state = Token.effect; break;}
 					else {t.kind = Token.minus; break loop;}
                 case Token.assign:
@@ -583,6 +587,7 @@ public class Scanner {
 			}
 		}
 		t.val = new String(tval, 0, tlen);
+        lt = t;
 		return t;
 	}
 	

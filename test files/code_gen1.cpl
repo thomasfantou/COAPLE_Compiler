@@ -1,3 +1,7 @@
+type 
+	list maList of integer end
+end
+
 caste Monitor;
 observes 
 	all p in Peer;
@@ -5,8 +9,10 @@ state
 	var x: integer;
 	var y: integer;
 	var g: string;
+	var hello : string;
 	var z: real;
 	var b: bool;
+	var ag: MyAgent;
 action test();
 action test2()
 	while x < 10 or y = 0 do x := x + 1; end
@@ -23,7 +29,8 @@ init
 		//x := 3;
 		//x := 4 + 3 * -2 + 1;
 		//x := (1 + 5) * 10;
-		//g := "koko!";
+		//g := "hello";
+		//hello := "hello";
 		//z := 3.1 - 1.1;
 		//b := true;
 		
@@ -57,7 +64,12 @@ init
 		//case x of 1 -> y := 2; 2 -> y := 10; else y := 100; end
 		//case g of "koko" -> y := 2; "hello" -> y := 10; end
 		
+		//create ag of MyAgent();
+		//destroy ag;
+		//join AnotherAgent();
+		//quit AnotherAgent();
 	end
 body
-	//x := y + 10;
+	var localvar : integer;
+	//localvar := 3;
 end Monitor

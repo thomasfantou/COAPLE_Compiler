@@ -6,7 +6,6 @@ import co.uk.brookes.codegeneration.builder.Instruction;
 import co.uk.brookes.symboltable.Obj;
 import co.uk.brookes.symboltable.STab;
 import co.uk.brookes.symboltable.Struct;
-import co.uk.brookes.codegeneration.Code;
 import co.uk.brookes.codegeneration.Operand;
 
 import java.util.ArrayList;
@@ -110,6 +109,7 @@ public class Parser {
     //  {TypeDec} {CasteDec}.
 	void Prog() {
 		while (la.kind == Token.type_) {
+            Builder.step = Builder.typedec_;
 			TypeDec();
 		}
 		while (la.kind == Token.caste_) {
@@ -222,14 +222,20 @@ public class Parser {
             type = StructureType();
 		} else if (la.kind == Token.ident) {
 			String id = ID();
-            Obj obj = STab.find(id);
-            if(!obj.equals(STab.noObj)){
+            if(STab.tryFind(id)) {
+                Obj obj = STab.find(id);
                 if(obj.kind == Obj.type_) {
                     type = obj.type;
                     type.name = id;
+                    Builder.addCons(id);
                 }
                 else
                     SemErr("invalid type");
+            }
+            else {  //not declared here
+                type = new Struct(Struct.caste_);
+                type.name = id;
+                Builder.addCons(id);
             }
 
 		} else SynErr(72);
@@ -668,8 +674,10 @@ public class Parser {
 		ArrayList<String> ids = IDList();
 		Expect(Token.colon);
 		Struct type = TypeExp();
-        for(String id : ids)
-            STab.insert(Obj.var_, id, type);
+        for(String id : ids) {
+            Obj obj = STab.insert(Obj.var_, id, type);
+            obj.localvarAddr = Builder.getIdxLocalVar();
+        }
 		if (la.kind == Token.assign) {
 			Get();
 			Expect(Token.ident);
@@ -852,7 +860,8 @@ public class Parser {
 	void CasteEvent() {
 		if (la.kind == Token.join_) {
 			Get();
-			ID();
+			String id = ID();
+            Builder.joinCaste(id);
 			Expect(Token.lpar);
 			if (la.kind == Token.ident) {
 				Get();
@@ -860,7 +869,8 @@ public class Parser {
 			Expect(Token.rpar);
 		} else if (la.kind == Token.quit_) {
 			Get();
-			ID();
+			String id = ID();
+            Builder.quitCaste(id);
 		} else if (la.kind == Token.suspend_) {
 			Get();
 			ID();
@@ -873,12 +883,14 @@ public class Parser {
     //AgentEvent =
     //  "create" ident "of" ID "("[ident]")" [url]
     //  | "destroy" ident.
-	void AgentEvent() { //TODO is it like "new object()"
+	void AgentEvent() { //TODO : with param
 		if (la.kind == Token.create_) {
 			Get();
 			Expect(Token.ident);
+            Obj obj = STab.find(t.val);
 			Expect(Token.of_);
-			ID();
+			String id = ID();
+            obj.localvarAddr = Builder.loadCaste(id);
 			Expect(Token.lpar);
 			if (la.kind == Token.ident) {
 				Get();
@@ -890,6 +902,13 @@ public class Parser {
 		} else if (la.kind == Token.destroy_) {
 			Get();
 			Expect(Token.ident);
+            Obj obj = STab.find(t.val);
+            if(obj.localvarAddr >= 0) {
+                Builder.destroyCaste(obj);
+            }
+            else //not defined
+                SemErr("agent '" + t.val + "' can not be destroyed as it has not been created.");
+
 		} else SynErr(78);
 	}
 

@@ -355,9 +355,9 @@ public class Scanner {
 		literals.put("and", new Integer(63));
 		literals.put("or", new Integer(64));
 		literals.put("xor", new Integer(65));
-		literals.put("true", new Integer(66));
-		literals.put("false", new Integer(67));
-		literals.put("not", new Integer(79));
+		literals.put("not", new Integer(77));
+		literals.put("true", new Integer(78));
+		literals.put("false", new Integer(79));
 
 	}
 	
@@ -553,22 +553,22 @@ public class Scanner {
 				case 20:
 					{t.kind = 59; break loop;}
 				case 21:
-					{t.kind = 70; break loop;}
+					{t.kind = 68; break loop;}
 				case 22:
-					{t.kind = 71; break loop;}
+					{t.kind = 69; break loop;}
 				case 23:
-					{t.kind = 72; break loop;}
+					{t.kind = 70; break loop;}
 				case 24:
-					{t.kind = 73; break loop;}
+					{t.kind = 71; break loop;}
 				case 25:
 					if (ch == '=') {AddCh(); state = 26; break;}
 					else {state = 0; break;}
 				case 26:
-					{t.kind = 74; break loop;}
+					{t.kind = 72; break loop;}
 				case 27:
-					{t.kind = 76; break loop;}
+					{t.kind = 74; break loop;}
 				case 28:
-					{t.kind = 78; break loop;}
+					{t.kind = 76; break loop;}
 				case 29:
 					{t.kind = 80; break loop;}
 				case 30:
@@ -580,21 +580,21 @@ public class Scanner {
 					if (ch == '=') {AddCh(); state = 17; break;}
 					else {t.kind = 16; break loop;}
 				case 33:
-					recEnd = pos; recKind = 69;
+					recEnd = pos; recKind = 67;
 					if (ch == '>') {AddCh(); state = 20; break;}
-					else {t.kind = 69; break loop;}
+					else {t.kind = 67; break loop;}
 				case 34:
-					recEnd = pos; recKind = 68;
+					recEnd = pos; recKind = 66;
 					if (ch == '+') {AddCh(); state = 21; break;}
-					else {t.kind = 68; break loop;}
+					else {t.kind = 66; break loop;}
 				case 35:
-					recEnd = pos; recKind = 75;
+					recEnd = pos; recKind = 73;
 					if (ch == '=') {AddCh(); state = 27; break;}
-					else {t.kind = 75; break loop;}
+					else {t.kind = 73; break loop;}
 				case 36:
-					recEnd = pos; recKind = 77;
+					recEnd = pos; recKind = 75;
 					if (ch == '=') {AddCh(); state = 28; break;}
-					else {t.kind = 77; break loop;}
+					else {t.kind = 75; break loop;}
 
 			}
 		}

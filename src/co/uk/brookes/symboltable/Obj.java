@@ -31,5 +31,6 @@ public class Obj {
 
     public Obj(int kind, String name, Struct type) {
         this.kind = kind; this.name = name; this.type = type;
+        localvarAddr = -1;
     }
 }

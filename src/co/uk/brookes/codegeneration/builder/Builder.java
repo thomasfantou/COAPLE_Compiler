@@ -52,12 +52,13 @@ public class Builder {
 
     public static int step;
     public final static int //steps used for the builder to set the instructions to their right place (e.g. var from envdec or state are threated differently)
-        envdec_ = 0,
-        statedec_ = 1,
-        actiondec_ = 2,
-        init_ = 3,
-        rooting_ = 4,
-        castereview_ = 5;
+        typedec_ = 0,
+        envdec_ = 1,
+        statedec_ = 2,
+        actiondec_ = 3,
+        init_ = 4,
+        rooting_ = 5,
+        castereview_ = 6;
 
     static int idx;
 
@@ -122,6 +123,10 @@ public class Builder {
 
     public static void add(Obj o) {     //for generating the XML, we use Obj, to add them in the Constant_section
         switch(step) {
+            case typedec_:
+                if(o.kind == Obj.type_)
+                    addType(o);
+                break;
             case envdec_:
                 if(o.kind == Obj.environment_) {
                     addLabel(o.name);
@@ -150,7 +155,15 @@ public class Builder {
 
     //add const (e.g. string val)
     public static void addCons(String con) {
+        if(con.startsWith("\"") && con.endsWith("\""))
+            con = con.substring(1, con.length() - 1);
         addLabel(con);
+
+        for(Instruction cons : constants)   //check in constants list
+            if(cons.code == Instruction.cons_) //if there is cons instruction and
+                if(cons.val.equals(con))    //if it has already been declared, quit
+                    return;
+
         Instruction ins = new Instruction();
         ins.kind = Instruction.constant_;
         ins.code = Instruction.cons_;
@@ -161,6 +174,8 @@ public class Builder {
     }
 
     static void addLabel(String val) {
+        for(Instruction cons : constants)
+            if(cons.code == Instruction.label_ && cons.val.equals(val)) return;
         Instruction ins = new Instruction();
         ins.index = idx++;
         ins.kind = Instruction.constant_;
@@ -208,6 +223,25 @@ public class Builder {
         ins.typeCode = Struct.integer_;
 
         constants.add(ins);
+    }
+
+    static void addType(Obj o) {
+        switch(o.type.kind){
+            case Struct.list_:
+                Instruction ins = new Instruction();
+                ins.index = idx++;
+                ins.kind = Instruction.constant_;
+                ins.code = Instruction.type_list;
+                ins.name = o.name;
+                ins.typeCode = o.type.kind;
+                ins.address = o.adr;
+                constants.add(ins);
+                break;
+            case Struct.record_:
+                break;
+            case Struct.enum_:
+                break;
+        }
     }
 
 
@@ -300,6 +334,8 @@ public class Builder {
 
     //insert something that is not an operand (e.g string value)
     public static void loadIns(String val) {
+        if(val.startsWith("\"") && val.endsWith("\""))
+            val = val.substring(1, val.length() - 1);
         Instruction ins = getInstruction(val);
         switch(ins.code) {
             case Instruction.cons_:
@@ -349,16 +385,22 @@ public class Builder {
         put(Instruction.quit_);
     }
 
-    //called in Conditions(), can be called in a if, while and repeat statement.
-    //return the address of the instruction (for a jump forward, we need to fixup the jump address later)
-    public static int condition(int[] inf) {    //inf[0] = type, inf[1] = operator, inf[2] = token
-        switch(inf[0]){
+    //when we compare 2 value of the stack, we use different instruction regarding the type
+    public static void compare(int type) {
+        switch(type){
             case Struct.integer_: put(Instruction.sub_ + Instruction.typeint_); break;
             case Struct.real_: put(Instruction.sub_ + Instruction.typereal_); break;
             case Struct.string_: put(Instruction.comparestring_); break;
             //case Struct.char_: put(Instruction.comparestring_); break;
             //case Struct.bool_:  //Do nothing, boolean is already 0 or 1
         }
+    }
+
+    //called in Conditions(), can be called in a if, while and repeat statement.
+    //return the address of the instruction (for a jump forward, we need to fixup the jump address later)
+    public static int condition(int[] inf) {    //inf[0] = type, inf[1] = operator, inf[2] = token
+        compare(inf[0]);
+
         switch(statementType) {
             case if_statement:
             case while_statement:
@@ -578,6 +620,88 @@ public class Builder {
             break;
         }
         return ins.address;
+    }
+
+    //return the index of the localvariable where the caste is stored
+    static public int loadCaste(String id) {
+        int index = getIdxLocalVar();
+        Instruction ins = getInstruction(id);
+        if(ins == null) {
+            Struct struct = new Struct(Struct.caste_);
+            struct.name = id;
+            Builder.addCons(id);
+            ins = getInstruction(id);
+        }
+
+        put(Instruction.loadcaste_);
+        put(String.valueOf(ins.address));
+        put(Instruction.agentnew_);
+        put(Instruction.agentalloc_);
+        put(Instruction.dup_);
+        put(Instruction.storevar_);
+        put(String.valueOf(index));
+        put(Instruction.agentregister_);
+        put(Instruction.sendmessage_);
+        put(Instruction.agentregisterpost_);
+        put(Instruction.agentready_);
+
+        return index;
+    }
+
+    static public void destroyCaste(Obj agent) {
+        Instruction ins = getInstruction(agent.type.name);  //name of caste
+
+        put(Instruction.loadcaste_);
+        put(String.valueOf(ins.address));
+        put(Instruction.pushvar_);
+        put(String.valueOf(agent.localvarAddr));
+        put(Instruction.agentdealloc_);
+        put(Instruction.pushvar_);
+        put(String.valueOf(agent.localvarAddr));
+        put(Instruction.agentunregister_);
+        put(Instruction.sendmessage_);
+        put(Instruction.resetvar_); //don't know if it is important to reset the variable.
+        put(String.valueOf(agent.localvarAddr));
+    }
+
+    static public void joinCaste(String id) {
+        Instruction ins = getInstruction(id);
+        if(ins == null) {
+            Struct struct = new Struct(Struct.caste_);
+            struct.name = id;
+            Builder.addCons(id);
+            ins = getInstruction(id);
+        }
+
+        put(Instruction.loadcaste_);
+        put(String.valueOf(ins.address));
+        put(Instruction.pushvar_);
+        put(String.valueOf(0)); //localvar[0] is the context of the agent itself
+        put(Instruction.agentalloc_);
+        put(Instruction.agentregister_);
+        put(Instruction.sendmessage_);
+        put(Instruction.agentregisterpost_);
+        put(Instruction.agentready_);
+    }
+
+    static public void quitCaste(String id) {
+        Instruction ins = getInstruction(id);
+        if(ins == null) {
+            Struct struct = new Struct(Struct.caste_);
+            struct.name = id;
+            Builder.addCons(id);
+            ins = getInstruction(id);
+        }
+
+        put(Instruction.loadcaste_);
+        put(String.valueOf(ins.address));
+        put(Instruction.pushvar_);
+        put(String.valueOf(0));
+        put(Instruction.agentdealloc_);
+        put(Instruction.pushvar_);
+        put(String.valueOf(0));
+        put(Instruction.agentunregister_);
+        put(Instruction.sendmessage_);
     }
 
     static public int put(String code) {

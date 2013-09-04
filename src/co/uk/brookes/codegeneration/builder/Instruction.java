@@ -8,22 +8,14 @@ import co.uk.brookes.symboltable.Struct;
  * Date: 7/1/13
  */
 public class Instruction {
-    public static final int  // instruction codes
+    public static final int  // instruction codes which need to be replaced by their string value,
         pushselfid_      =  3,
         pop_             =  5,
-        dup_             =  6,
         pushlistentry_   =  8,
         int2string_    = 13,
         if_    = 14,
         nop_      = 16,
         yield_      = 20,
-        loadcaste_    = 21,
-        agentnew_      = 22,
-        agentalloc_       = 23,
-        agentdealloc_         = 24,
-        agentregister_         = 25,
-        agentregisterpost_         = 26,
-        agentready_         = 27,
         instanceof_         = 28,
         instanceset_  = 29,
         instancesetpost_ = 30,
@@ -32,7 +24,6 @@ public class Instruction {
         paramstring_     = 36,
         patternexist_     = 38,
         patternmatch_ = 39,
-        resetvar_ = 40,
         pushenvthruvar_     = 41,
         pushenvthrustate_ = 42,
         loaddll_   = 44,
@@ -78,7 +69,17 @@ public class Instruction {
         setaction_ = "SETACTION",
         updateaction_ = "UPDATEACTION",
         pushvar_         =  "PUSHVAR",
-        storevar_        =  "STOREVAR";
+        storevar_        =  "STOREVAR",
+        resetvar_ = "RESETVAR",
+        loadcaste_    = "LOADCASTE",
+        agentnew_      = "AGENTNEW",
+        agentalloc_       = "AGENTALLOC",
+        dup_             =  "DUP",
+        agentregister_         = "AGENTREGISTER",
+        agentregisterpost_         = "AGENTREGISTERPOST",
+        agentready_         = "AGENTREADY",
+        agentdealloc_ = "AGENTDEALLOC",
+        agentunregister_ = "AGENTUNREGISTER";
 
     static String tempAddress = ":tmpa:";
     static String tempInstructionIn = ":tmpi:"; //instruction pushing from [state|localvar] to the stack
@@ -95,7 +96,10 @@ public class Instruction {
         action_ = 2,
         env_    = 3,
         caste_  = 4,
-        cons_   = 5;
+        cons_   = 5,
+        type_list = 6,
+        type_record = 7,
+        type_enum = 8;
 
 
 
